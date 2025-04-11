@@ -1,5 +1,6 @@
 'use client';
 
+import ExplorePage from '@/components/ExplorePage';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
 
 const Home = () => (
@@ -12,7 +13,7 @@ const Home = () => (
             Buy, Sell, and Trade on Campus
           </h1>
           <p className="mb-4">
-            Welcome to UH Marketplace — a safe and easy place to trade goods within the UH Manoa community. Post what you want, browse what you need, and keep it all on campus.
+            Welcome to UH Marketplace – a safe and easy place to trade goods within the UH Manoa community. Post what you want, browse what you need, and keep it all on campus.
           </p>
           <Button variant="success" size="lg">
             Start Browsing
