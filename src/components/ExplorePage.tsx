@@ -18,7 +18,6 @@ const items = [
 
 const ExplorePage = () => (
   <>
-    <TopMenu />
     <Container className="py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="fs-4 fw-bold m-0">Today&apos;s Picks</h1>
