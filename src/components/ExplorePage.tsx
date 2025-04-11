@@ -2,7 +2,6 @@
 
 import { GeoAltFill } from 'react-bootstrap-icons';
 import { Container, Row, Col } from 'react-bootstrap';
-import TopMenu from '@/components/TopMenu';
 import ItemCard from '@/components/ItemCard';
 
 const items = [
