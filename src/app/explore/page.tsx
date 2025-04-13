@@ -6,11 +6,9 @@ import ExplorePage from '@/components/ExplorePage';
 
 const Explore = () => (
   <>
-    <Navbar />
     <main className="bg-white min-vh-100">
       <ExplorePage />
     </main>
-    <Footer />
   </>
 );
 
