@@ -7,7 +7,7 @@ import { PersonCircle } from 'react-bootstrap-icons';
 
 const NavBar: React.FC = () => {
   const { data: session } = useSession();
-  const currentUser = session?.user?.email;
+  // const currentUser = session?.user?.email;
 
   return (
     <Navbar bg="success" variant="dark" expand="lg" sticky="top">
