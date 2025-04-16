@@ -7,7 +7,6 @@ import { PersonCircle } from 'react-bootstrap-icons';
 
 const NavBar: React.FC = () => {
   const { data: session } = useSession();
-  // const currentUser = session?.user?.email;
 
   return (
     <Navbar bg="success" variant="dark" expand="lg" sticky="top">
@@ -41,18 +40,31 @@ const NavBar: React.FC = () => {
 
         {/* Right: Nav Links */}
         <Nav className="d-flex align-items-center ms-3">
+          {/* NEW: Profile Page text link, always visible */}
+          <Nav.Link as={Link} href="/profile" className="text-white fw-semibold">
+            Profile Page
+          </Nav.Link>
+
           <Nav.Link as={Link} href="/explore" className="text-white fw-semibold">
             Explore
           </Nav.Link>
           <Nav.Link as={Link} href="/favorites" className="text-white fw-semibold">
             Favorites
           </Nav.Link>
-          <Nav.Link as={Link} href={session ? '/messages' : '/auth/signin'} className="text-white fw-semibold">
+          <Nav.Link as={Link} href="/messages" className="text-white fw-semibold">
             Messages
           </Nav.Link>
-          <Nav.Link as={Link} href={session ? '/profile' : '/auth/signin'}>
-            <PersonCircle size={26} className="text-white" />
-          </Nav.Link>
+
+          {session?.user ? (
+            <Nav.Link as={Link} href="/profile">
+              <PersonCircle size={26} className="text-white" />
+            </Nav.Link>
+          ) : (
+            <Nav.Link as={Link} href="/auth/signin" className="text-white fw-semibold d-flex align-items-center">
+              <PersonCircle size={26} className="text-white me-1" />
+              Sign In
+            </Nav.Link>
+          )}
         </Nav>
       </Container>
     </Navbar>
