@@ -14,7 +14,8 @@ const ProfilePage: React.FC = () => {
 
   return (
     <>
-      <style jsx>{`
+      <style>
+        {`
         * {
           box-sizing: border-box;
         }
@@ -84,7 +85,8 @@ const ProfilePage: React.FC = () => {
         button:hover {
           background-color: #0056b3;
         }
-      `}</style>
+      `}
+      </style>
 
       <div className="container">
         {/* Profile Header */}
