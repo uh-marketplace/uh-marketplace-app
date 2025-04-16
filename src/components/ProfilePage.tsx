@@ -36,13 +36,6 @@ const ProfilePage: React.FC = () => {
           border-radius: 10px;
         }
 
-        .profile-banner img {
-          border-radius: 50%;
-          width: 100px;
-          height: 100px;
-          object-fit: cover;
-        }
-
         .profile-details h2 {
           margin: 0;
         }
@@ -73,14 +66,6 @@ const ProfilePage: React.FC = () => {
           text-align: center;
         }
 
-        .item-card img {
-          width: 100%;
-          height: 120px;
-          object-fit: cover;
-          border-radius: 6px;
-          margin-bottom: 0.5rem;
-        }
-
         .manage-buttons {
           display: flex;
           gap: 1rem;
@@ -104,7 +89,13 @@ const ProfilePage: React.FC = () => {
       <div className="container">
         {/* Profile Header */}
         <div className="profile-banner">
-          <img src="/images/default-avatar.png" alt="User Avatar" />
+          <Image
+            src="/images/default-avatar.png"
+            alt="User Avatar"
+            width={100}
+            height={100}
+            style={{ borderRadius: '50%', objectFit: 'cover' }}
+          />
           <div className="profile-details">
             <h2>John Doe</h2>
             <p>Email: john.doe@hawaii.edu</p>
@@ -115,7 +106,10 @@ const ProfilePage: React.FC = () => {
         {/* About */}
         <section>
           <h3>About</h3>
-          <p>Hi! I'm John and I love trading cool stuff on UH Marketplace. Looking for school supplies, dorm furniture, and tech gadgets.</p>
+          <p>
+            Hi! I&apos;m John and I love trading cool stuff on UH Marketplace.
+            Looking for school supplies, dorm furniture, and tech gadgets.
+          </p>
         </section>
 
         {/* Posted Items */}
@@ -123,11 +117,23 @@ const ProfilePage: React.FC = () => {
           <h3>Posted Items</h3>
           <div className="items-grid">
             <div className="item-card">
-              <img src="/images/sample1.jpg" alt="Item 1" />
+              <Image
+                src="/images/sample1.jpg"
+                alt="Item 1"
+                width={300}
+                height={120}
+                style={{ objectFit: 'cover', borderRadius: '6px' }}
+              />
               <p>Calculator - $20</p>
             </div>
             <div className="item-card">
-              <img src="/images/sample2.jpg" alt="Item 2" />
+              <Image
+                src="/images/sample2.jpg"
+                alt="Item 2"
+                width={300}
+                height={120}
+                style={{ objectFit: 'cover', borderRadius: '6px' }}
+              />
               <p>Mini Fridge - $75</p>
             </div>
           </div>
@@ -138,11 +144,23 @@ const ProfilePage: React.FC = () => {
           <h3>Favorites</h3>
           <div className="items-grid">
             <div className="item-card">
-              <img src="/images/sample3.jpg" alt="Fav 1" />
+              <Image
+                src="/images/sample3.jpg"
+                alt="Fav 1"
+                width={300}
+                height={120}
+                style={{ objectFit: 'cover', borderRadius: '6px' }}
+              />
               <p>Desk Chair</p>
             </div>
             <div className="item-card">
-              <img src="/images/sample4.jpg" alt="Fav 2" />
+              <Image
+                src="/images/sample4.jpg"
+                alt="Fav 2"
+                width={300}
+                height={120}
+                style={{ objectFit: 'cover', borderRadius: '6px' }}
+              />
               <p>LED Lamp</p>
             </div>
           </div>
@@ -152,8 +170,12 @@ const ProfilePage: React.FC = () => {
         <section>
           <h3>Manage Your Posts</h3>
           <div className="manage-buttons">
-            <button type="button" onClick={editPost}>Edit Post</button>
-            <button type="button" onClick={deletePost}>Delete Post</button>
+            <button type="button" onClick={editPost}>
+              Edit Post
+            </button>
+            <button type="button" onClick={deletePost}>
+              Delete Post
+            </button>
           </div>
         </section>
       </div>
