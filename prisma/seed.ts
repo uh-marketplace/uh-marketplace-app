@@ -36,6 +36,25 @@ async function main() {
       },
     });
   }
+
+  for (const data of config.defaultItems) {
+    const condition = data.condition as Condition || Condition.good;
+    console.log(`  Adding item: ${JSON.stringify(data)}`);
+    // eslint-disable-next-line no-await-in-loop
+    await prisma.item.upsert({
+      where: { id: config.defaultItems.indexOf(data) + 1 },
+      update: {},
+      create: {
+        name: data.name,
+        condition,
+        price: data.price,
+        location: data.location,
+        owner: data.owner,
+        imageUrl: data.imageUrl,
+        description: data.description,
+      },
+    });
+  }
 }
 main()
   .then(() => prisma.$disconnect())
