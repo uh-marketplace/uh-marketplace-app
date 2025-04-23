@@ -44,7 +44,9 @@ const NavBar: React.FC = () => {
           <Nav.Link as={Link} href="/profile" className="text-white fw-semibold">
             Profile Page
           </Nav.Link>
-
+          <Nav.Link as={Link} href="/add" className="text-white fw-semibold">
+            Add
+          </Nav.Link>
           <Nav.Link as={Link} href="/explore" className="text-white fw-semibold">
             Explore
           </Nav.Link>
