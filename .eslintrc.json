@@ -5,6 +5,10 @@
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
+  "ignorePatterns": [
+    "next.config.js",       
+    "next.config.mjs"       
+  ],
   "rules": {
     "arrow-parens": "off",
     "func-names": "off",
