@@ -58,12 +58,14 @@ const ProfilePage: React.FC = () => {
           <h2>{userInfo?.email ?? 'UH User'}</h2>
           <p>
             <strong>Email:</strong>
+            <br />
+            {userInfo?.email}
           </p>
-          <p>{userInfo?.email}</p>
           <p>
             <strong>Member since:</strong>
+            <br />
+            {new Date().toLocaleDateString()}
           </p>
-          <p>{new Date().toLocaleDateString()}</p>
         </div>
       </div>
 
@@ -95,12 +97,14 @@ const ProfilePage: React.FC = () => {
         * {
           box-sizing: border-box;
         }
+
         .container {
           max-width: 1000px;
           margin: 0 auto;
           padding: 2rem 1rem;
           font-family: Arial, sans-serif;
         }
+
         .profile-banner {
           background-color: #00664b;
           color: white;
@@ -110,24 +114,29 @@ const ProfilePage: React.FC = () => {
           gap: 1.5rem;
           border-radius: 10px;
         }
+
         .profile-details h2 {
           margin: 0;
         }
+
         section {
           margin-top: 2rem;
           padding: 1.5rem;
           background-color: #f9f9f9;
           border-radius: 10px;
         }
+
         h3 {
           margin-bottom: 1rem;
           color: #333;
         }
+
         .items-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
           gap: 1rem;
         }
+
         .item-card {
           background: white;
           border: 1px solid #ccc;
