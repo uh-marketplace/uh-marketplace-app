@@ -11,7 +11,7 @@
 
 import { Container, Row, Col, Card, Form, InputGroup, Button, Image } from 'react-bootstrap';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { redirect } from 'next/navigation';
@@ -354,9 +354,7 @@ const MessagesPage = () => {
   );
 };
 
-export default MessagesPage;
-=======
-import React from 'react';
+// Removed duplicate React import
 
 const users = [
   {
