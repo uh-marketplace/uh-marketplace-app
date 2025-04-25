@@ -1,38 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-
-const supabase = createClientComponentClient();
+import { useSession } from '@supabase/auth-helpers-react';
 
 const ProfilePage = () => {
-  const [email, setEmail] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const session = useSession();
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      console.log('Session:', sessionData);
-      if (sessionError) console.error('Session error:', sessionError.message);
-
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      console.log('User:', userData);
-      if (userError) console.error('User error:', userError.message);
-
-      if (userData?.user?.email) {
-        setEmail(userData.user.email);
-      } else {
-        setEmail(null);
-      }
-
-      setLoading(false);
-    };
-
-    getUser();
-  }, []);
-
-  if (loading) return <p>Loading...</p>;
-  if (!email) return <p>You must be signed in to view this page.</p>;
+  if (!session) {
+    return <p>You must be signed in to view this page.</p>;
+  }
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
@@ -41,7 +16,7 @@ const ProfilePage = () => {
         <strong>
           Email:
         </strong>
-        {email}
+        {session.user.email}
       </p>
     </div>
   );
