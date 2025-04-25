@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Container, Nav, Navbar, Image, Form, Button, FormControl } from 'react-bootstrap';
 import { PersonCircle } from 'react-bootstrap-icons';
@@ -40,7 +40,6 @@ const NavBar: React.FC = () => {
 
         {/* Right: Nav Links */}
         <Nav className="d-flex align-items-center ms-3">
-          {/* NEW: Profile Page text link, always visible */}
           <Nav.Link as={Link} href="/profile" className="text-white fw-semibold">
             Profile Page
           </Nav.Link>
@@ -58,9 +57,19 @@ const NavBar: React.FC = () => {
           </Nav.Link>
 
           {session?.user ? (
-            <Nav.Link as={Link} href="/profile">
-              <PersonCircle size={26} className="text-white" />
-            </Nav.Link>
+            <>
+              <Nav.Link as={Link} href="/profile">
+                <PersonCircle size={26} className="text-white" />
+              </Nav.Link>
+              <Button
+                variant="outline-light"
+                size="sm"
+                className="ms-2 fw-semibold"
+                onClick={() => signOut()}
+              >
+                Sign Out
+              </Button>
+            </>
           ) : (
             <Nav.Link as={Link} href="/auth/signin" className="text-white fw-semibold d-flex align-items-center">
               <PersonCircle size={26} className="text-white me-1" />
