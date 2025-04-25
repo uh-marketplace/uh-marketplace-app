@@ -33,10 +33,10 @@ const ProfilePage: React.FC = () => {
     const fetchUserData = async () => {
       const {
         data: { user },
-        error: userError,
+        /* error: userError, */
       } = await supabase.auth.getUser();
 
-      if (/*userError ||*/ !user /*|| !user.email*/) {
+      if (/* userError || */ !user /* || !user.email */) {
         console.warn('User not signed in or session error.');
         setLoading(false);
         return;
