@@ -123,8 +123,6 @@ const MessagesPage = () => {
     }
   };
 
-  // Removed unused filteredUsers variable
-
   // Find other participant in conversation
   const getOtherParticipant = (conversation: Conversation) => {
     const otherUser = conversation.participants.find(p => p !== currentUser) || '';
@@ -184,8 +182,8 @@ const MessagesPage = () => {
                         }}
                       >
                         <Image
-                          src={otherUser.image || `https://ui-avatars.com/api/?name=$
-                            {encodeURIComponent(otherUser.email)}&background=random`}
+                          src={otherUser.image || `https://ui-avatars.com/api/?name=
+                            ${encodeURIComponent(otherUser.email)}&background=random`}
                           alt="avatar"
                           width={45}
                           height={45}
@@ -229,9 +227,8 @@ const MessagesPage = () => {
                             return (
                               <>
                                 <Image
-                                  src={otherUser.image
-                                    || `https://ui-avatars.com/api/?name=$
-                                    {encodeURIComponent(otherUser.email)}&background=random`}
+                                  src={otherUser.image || `https://ui-avatars.com/api/?name=
+                                    ${encodeURIComponent(otherUser.email)}&background=random`}
                                   alt="avatar"
                                   width={40}
                                   height={40}

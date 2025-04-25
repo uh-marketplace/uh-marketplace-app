@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcrypt';
-
-import * as config from '../config/settings.development.json';
+import config from '../config/settings.development.json';
 
 enum Condition {
   good = 'good',
