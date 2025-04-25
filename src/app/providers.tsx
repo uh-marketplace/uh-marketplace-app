@@ -1,21 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { SessionContextProvider } from '@supabase/auth-helpers-react';
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { SessionProvider } from 'next-auth/react';
 
 type Props = {
-  children: React.ReactNode;
+  // eslint-disable-next-line react/require-default-props
+  children?: React.ReactNode;
 };
 
-const Providers = ({ children }: Props) => {
-  const [supabaseClient] = useState(() => createBrowserSupabaseClient());
-
-  return (
-    <SessionContextProvider supabaseClient={supabaseClient}>
-      {children}
-    </SessionContextProvider>
-  );
-};
+const Providers = ({ children }: Props) => <SessionProvider>{children}</SessionProvider>;
 
 export default Providers;
