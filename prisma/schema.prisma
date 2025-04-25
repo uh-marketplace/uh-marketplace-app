@@ -17,20 +17,46 @@ datasource db {
   // directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+model User {
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  password       String
+  role           Role            @default(USER)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sentMessages   Message[]       @relation("SentMessages")
+  receivedMessages Message[]     @relation("ReceivedMessages")
+  conversations  Conversation[]  @relation("UserConversations")
+}
+
+model Conversation {
+  id          Int         @id @default(autoincrement())
+  name        String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  participants User[]     @relation("UserConversations")
+  messages    Message[]
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  content        String
+  senderId       Int
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId     Int
+  receiver       User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
 enum Role {
   USER
   ADMIN
 }
 
-model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  role     Role   @default(USER)
-}
-
 enum Condition {
-  excellent
   good
   fair
   poor
@@ -40,6 +66,6 @@ model Stuff {
   id        Int       @id @default(autoincrement())
   name      String
   quantity  Int
-  condition Condition @default(good)
   owner     String
+  condition Condition @default(good)
 }
