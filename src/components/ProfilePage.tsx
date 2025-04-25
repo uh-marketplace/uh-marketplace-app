@@ -15,23 +15,43 @@ const ProfilePage: React.FC = () => {
     const fetchUserData = async () => {
       const {
         data: { session },
+        error: sessionError,
       } = await supabase.auth.getSession();
 
-      const userEmail = session?.user?.email ?? null;
-      if (!userEmail) return;
+      if (sessionError) {
+        console.error('Session error:', sessionError.message);
+        setLoading(false);
+        return;
+      }
 
-      const { data: userData } = await supabase
+      const userEmail = session?.user?.email;
+
+      if (!userEmail) {
+        console.warn('User email not found. User may not be signed in.');
+        setLoading(false);
+        return;
+      }
+
+      const { data: userData, error: userError } = await supabase
         .from('User')
         .select('*')
         .eq('email', userEmail)
         .single();
 
+      if (userError) {
+        console.error('User fetch error:', userError.message);
+      }
+
       setUserInfo(userData);
 
-      const { data: userItems } = await supabase
+      const { data: userItems, error: itemsError } = await supabase
         .from('Item')
         .select('*')
         .eq('owner', userEmail);
+
+      if (itemsError) {
+        console.error('Items fetch error:', itemsError.message);
+      }
 
       setItems(userItems ?? []);
       setLoading(false);
@@ -42,6 +62,10 @@ const ProfilePage: React.FC = () => {
 
   if (loading) {
     return <p className="text-center mt-5">Loading your profile...</p>;
+  }
+
+  if (!userInfo) {
+    return <p className="text-center mt-5">You must be signed in to view your profile.</p>;
   }
 
   return (
@@ -55,15 +79,13 @@ const ProfilePage: React.FC = () => {
           style={{ borderRadius: '50%', objectFit: 'cover' }}
         />
         <div className="profile-details">
-          <h2>{userInfo?.email ?? 'UH User'}</h2>
+          <h2>{userInfo.email}</h2>
           <p>
-            <strong>Email:</strong>
-            <br />
-            {userInfo?.email}
+            Email:
+            {userInfo.email}
           </p>
           <p>
-            <strong>Member since:</strong>
-            <br />
+            Member since:
             {new Date().toLocaleDateString()}
           </p>
         </div>
@@ -86,8 +108,11 @@ const ProfilePage: React.FC = () => {
                 height={120}
                 style={{ objectFit: 'cover', borderRadius: '6px' }}
               />
-              <p>{item.name}</p>
               <p>
+                {item.name}
+                {' '}
+                <br />
+                {' '}
                 $
                 {item.price}
               </p>
@@ -98,17 +123,12 @@ const ProfilePage: React.FC = () => {
 
       <style>
         {`
-        * {
-          box-sizing: border-box;
-        }
-
         .container {
           max-width: 1000px;
           margin: 0 auto;
           padding: 2rem 1rem;
           font-family: Arial, sans-serif;
         }
-
         .profile-banner {
           background-color: #00664b;
           color: white;
@@ -118,29 +138,24 @@ const ProfilePage: React.FC = () => {
           gap: 1.5rem;
           border-radius: 10px;
         }
-
         .profile-details h2 {
           margin: 0;
         }
-
         section {
           margin-top: 2rem;
           padding: 1.5rem;
           background-color: #f9f9f9;
           border-radius: 10px;
         }
-
         h3 {
           margin-bottom: 1rem;
           color: #333;
         }
-
         .items-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
           gap: 1rem;
         }
-
         .item-card {
           background: white;
           border: 1px solid #ccc;
