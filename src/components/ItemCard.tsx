@@ -1,3 +1,6 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable max-len */
+
 'use client';
 
 import { useState } from 'react';
@@ -5,16 +8,26 @@ import Image from 'next/image';
 import { Heart, HeartFill, PencilFill, TrashFill } from 'react-bootstrap-icons';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-const ItemCard = ({ 
-  item, 
-  isOwner = false,
-  onEdit,
-  onDelete 
-}: { 
-  item: any;
+interface ItemCardProps {
+  item: {
+    id: string;
+    title: string;
+    price: number;
+    description: string;
+    imageUrl: string;
+    location: string;
+    userId: string;
+  };
   isOwner?: boolean;
   onEdit?: (itemId: string, updatedData: any) => void;
   onDelete?: (itemId: string) => void;
+}
+
+const ItemCard: React.FC<ItemCardProps> = ({
+  item,
+  isOwner = false,
+  onEdit,
+  onDelete,
 }) => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -24,12 +37,12 @@ const ItemCard = ({
     description: item.description,
   });
 
-  const toggleFavorite = async () => {
+  const toggleFavorite = async (): Promise<void> => {
     try {
       const response = await fetch(`/api/favorites/${item.id}`, {
         method: isFavorited ? 'DELETE' : 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
@@ -41,14 +54,14 @@ const ItemCard = ({
     }
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (): Promise<void> => {
     if (onEdit) {
       await onEdit(item.id, editFormData);
       setShowEditModal(false);
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (onDelete && window.confirm('Are you sure you want to delete this item?')) {
       await onDelete(item.id);
     }
@@ -71,7 +84,7 @@ const ItemCard = ({
               <Heart color="gray" size={20} />
             )}
           </button>
-          
+
           {isOwner && (
             <>
               <button
@@ -105,7 +118,10 @@ const ItemCard = ({
 
         {/* Item Content */}
         <div className="p-2">
-          <p className="fw-bold mb-1">${item.price}</p>
+          <p className="fw-bold mb-1">
+            $
+            {item.price}
+          </p>
           <h2 className="fs-6 fw-normal mb-1">{item.title}</h2>
           <p className="text-secondary small">{item.location}</p>
         </div>
@@ -123,7 +139,7 @@ const ItemCard = ({
               <Form.Control
                 type="text"
                 value={editFormData.title}
-                onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -131,7 +147,7 @@ const ItemCard = ({
               <Form.Control
                 type="number"
                 value={editFormData.price}
-                onChange={(e) => setEditFormData({...editFormData, price: Number(e.target.value)})}
+                onChange={(e) => setEditFormData({ ...editFormData, price: Number(e.target.value) })}
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -139,7 +155,7 @@ const ItemCard = ({
               <Form.Control
                 as="textarea"
                 value={editFormData.description}
-                onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
               />
             </Form.Group>
           </Form>
