@@ -1,3 +1,5 @@
+/* eslint-disable import/prefer-default-export */
+
 import { prisma } from '@/lib/prisma';
 import ExplorePageContent from '@/components/ExplorePage';
 
