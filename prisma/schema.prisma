@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+
 }
 
 model User {
@@ -39,6 +40,7 @@ model Message {
   conversationId Int
 }
 
+
 enum Role {
   USER
   ADMIN
@@ -56,6 +58,17 @@ model Stuff {
   quantity  Int
   owner     String
   condition Condition @default(good)
+}
+
+model Item {
+  id        Int       @id @default(autoincrement())
+  name      String
+  condition Condition @default(good)
+  price     Float
+  location  String
+  owner     String
+  imageUrl  String
+  description String
 }
 
 model Item {

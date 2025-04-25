@@ -9,5 +9,35 @@
     { "name": "Bicycle", "quantity": 2, "owner": "john@foo.com", "condition": "poor" },
     { "name": "Banana", "quantity": 2, "owner": "admin@foo.com", "condition": "good" },
     { "name": "Boogie Board", "quantity": 2, "owner": "admin@foo.com", "condition": "excellent" }
+  ],
+
+    "defaultItems": [
+    {
+      "name": "Keyboard",
+      "condition": "fair",
+      "price": 199.99,
+      "location": "Campus Center",
+      "owner": "john@foo.com",
+      "imageUrl": "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=2960&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "description": "Used Keychron K2 Mechanical Wireless Keyboard."
+    },
+    {
+      "name": "Laptop",
+      "condition": "good",
+      "price": 899.99,
+      "location": "Hamilton Library",
+      "owner": "admin@foo.com",
+      "imageUrl": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=2960&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "description": "Lightly used M1 Macbook Air with 16GB RAM and 512GB SSD."
+    },
+    {
+      "name": "Headphones",
+      "condition": "excellent",
+      "price": 299.99,
+      "location": "Paradise Palms",
+      "owner": "john@foo.com",
+      "imageUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2960&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "description": "Sony WH-1000XM4 noise-canceling headphones."
+    }
   ]
 }
