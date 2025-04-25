@@ -1,7 +1,6 @@
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { prisma } from '@/lib/prisma';
 import ItemCard from '@/components/ItemCard';
-import Footer from '@/components/Footer';
 
 export default async function Home() {
   const items = await prisma.item.findMany();
@@ -36,7 +35,6 @@ export default async function Home() {
           </Row>
         </Container>
       </main>
-      <Footer />
     </div>
   );
 }
