@@ -36,9 +36,14 @@ const ProfilePage = () => {
   return (
     <div className="container text-center mt-5">
       <h1 className="mb-3">User Profile</h1>
-      <p><strong>Email:</strong> {email}</p>
+      <p>
+        <strong>
+          Email:
+        </strong> 
+        {email}
+      </p>
 
-      <style jsx>{`
+      <style>{`
         .container {
           font-family: Arial, sans-serif;
           padding: 2rem;
