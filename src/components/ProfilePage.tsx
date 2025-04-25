@@ -10,50 +10,39 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchEmail = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+    const getUser = async () => {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log('Session:', sessionData);
+      if (sessionError) console.error('Session error:', sessionError.message);
 
-      if (error || !user?.email) {
-        console.warn('User not signed in or error occurred.');
-        setEmail(null);
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      console.log('User:', userData);
+      if (userError) console.error('User error:', userError.message);
+
+      if (userData?.user?.email) {
+        setEmail(userData.user.email);
       } else {
-        setEmail(user.email);
+        setEmail(null);
       }
 
       setLoading(false);
     };
 
-    fetchEmail();
+    getUser();
   }, []);
 
-  if (loading) return <p className="text-center mt-5">Loading profile...</p>;
-
-  if (!email) return <p className="text-center mt-5">You must be signed in to view this page.</p>;
+  if (loading) return <p>Loading...</p>;
+  if (!email) return <p>You must be signed in to view this page.</p>;
 
   return (
-    <div className="container text-center mt-5">
-      <h1 className="mb-3">User Profile</h1>
+    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+      <h2>User Profile</h2>
       <p>
         <strong>
           Email:
-        </strong>
+        </strong> 
         {email}
       </p>
-
-      <style>
-        {`
-        .container {
-          font-family: Arial, sans-serif;
-          padding: 2rem;
-        }
-        h1 {
-          color: #00664b;
-        }
-      `}
-      </style>
     </div>
   );
 };
