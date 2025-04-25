@@ -3,13 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/lib/database.types';
 
-const supabase = createClientComponentClient<Database>();
+const supabase = createClientComponentClient();
 
 const ProfilePage: React.FC = () => {
-  const [userInfo, setUserInfo] = useState<Database['public']['Tables']['User']['Row'] | null>(null);
-  const [items, setItems] = useState<Database['public']['Tables']['Item']['Row'][]>([]);
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,9 +56,13 @@ const ProfilePage: React.FC = () => {
         />
         <div className="profile-details">
           <h2>{userInfo?.email ?? 'UH User'}</h2>
-          <p>Email:</p>
+          <p>
+            <strong>Email:</strong>
+          </p>
           <p>{userInfo?.email}</p>
-          <p>Member since:</p>
+          <p>
+            <strong>Member since:</strong>
+          </p>
           <p>{new Date().toLocaleDateString()}</p>
         </div>
       </div>
@@ -81,13 +84,17 @@ const ProfilePage: React.FC = () => {
                 height={120}
                 style={{ objectFit: 'cover', borderRadius: '6px' }}
               />
-              <p>{item.name} - ${item.price}</p>
+              <p>{item.name}</p>
+              <p>${item.price}</p>
             </div>
           ))}
         </div>
       </section>
 
       <style jsx>{`
+        * {
+          box-sizing: border-box;
+        }
         .container {
           max-width: 1000px;
           margin: 0 auto;
