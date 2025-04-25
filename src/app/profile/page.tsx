@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { prisma } from '@/lib/prisma'; // Assuming you have prisma client set up like this
+//import { prisma } from '@/lib/prisma'; // Assuming you have prisma client set up like this
 import { redirect } from 'next/navigation';
 
 export default function ProfilePage() {
@@ -41,7 +41,10 @@ export default function ProfilePage() {
   return (
     <div className="flex justify-center items-center h-screen">
       {email ? (
-        <h1 className="text-2xl">Welcome, {email}</h1>
+        <h1 className="text-2xl">
+          Welcome,
+          {email}
+        </h1>
       ) : (
         <p>Loading your profile...</p>
       )}
