@@ -93,8 +93,14 @@ const ProfilePage: React.FC = () => {
         />
         <div className="profile-details">
           <h2>{userInfo.email}</h2>
-          <p>Email: {userInfo.email}</p>
-          <p>Member since: {new Date().toLocaleDateString()}</p>
+          <p>
+            Email:
+            {userInfo.email}
+          </p>
+          <p>
+            Member since:
+            {new Date().toLocaleDateString()}
+          </p>
         </div>
       </div>
 
@@ -116,13 +122,17 @@ const ProfilePage: React.FC = () => {
                 style={{ objectFit: 'cover', borderRadius: '6px' }}
               />
               <p>{item.name}</p>
-              <p>${item.price}</p>
+              <p>
+                $
+                {item.price}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      <style jsx>{`
+      <style>
+        {`
         .container {
           max-width: 1000px;
           margin: 0 auto;
@@ -163,7 +173,8 @@ const ProfilePage: React.FC = () => {
           padding: 1rem;
           text-align: center;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };
