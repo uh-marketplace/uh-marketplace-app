@@ -39,8 +39,9 @@ const ItemCard = ({ item }: { item: any }) => {
 
       {/* Item Content */}
       <div className="p-2">
+        <h2 className="fs-6 fw-normal mb-1">{item.name}</h2>
         <p className="fw-bold mb-1">{item.price}</p>
-        <h2 className="fs-6 fw-normal mb-1">{item.title}</h2>
+        <p className="text-secondary mb-1">{item.condition}</p>
         <p className="text-secondary small">{item.location}</p>
       </div>
     </div>
