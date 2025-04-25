@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcrypt';
-import config from '../config/settings.development.json';
+import config from '../config/settings.development.json'; // Make sure tsconfig.json allows JSON imports
 
 enum Condition {
   good = 'good',
@@ -176,9 +176,12 @@ async function main() {
   }
 }
 main()
-  .then(() => prisma.$disconnect())
+  .then(() => {
+    console.log('🌱 Seeding complete');
+    return prisma.$disconnect();
+  })
   .catch(async (e) => {
-    console.error(e);
+    console.error('❌ Error during seed:', e); // ✅ show full error
     await prisma.$disconnect();
     process.exit(1);
   });
