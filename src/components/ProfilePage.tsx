@@ -39,11 +39,12 @@ const ProfilePage = () => {
       <p>
         <strong>
           Email:
-        </strong> 
+        </strong>
         {email}
       </p>
 
-      <style>{`
+      <style>
+        {`
         .container {
           font-family: Arial, sans-serif;
           padding: 2rem;
@@ -51,7 +52,8 @@ const ProfilePage = () => {
         h1 {
           color: #00664b;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };
