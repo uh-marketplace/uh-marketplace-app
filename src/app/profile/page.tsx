@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-//import { prisma } from '@/lib/prisma'; // Assuming you have prisma client set up like this
+// import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 
 export default function ProfilePage() {
