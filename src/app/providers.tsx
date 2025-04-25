@@ -5,7 +5,7 @@ import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 type Props = {
-  children?: React.ReactNode;
+  children: React.ReactNode;
 };
 
 const Providers = ({ children }: Props) => {
