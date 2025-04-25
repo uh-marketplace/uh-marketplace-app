@@ -1,155 +1,149 @@
 'use client';
 
 import { Container, Row, Col, Card, Form, InputGroup, Button, Image } from 'react-bootstrap';
-import React, { useState, useEffect, useRef } from 'react';
-// Define the types manually if they are not exported from @prisma/client
-type User = {
-  id: number;
-  email: string;
-  name?: string;
-};
+import { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { redirect } from 'next/navigation';
 
-type Message = {
+// Define types for our data
+interface User {
+  email: string;
+  displayName?: string;
+  image?: string;
+  status?: 'online' | 'offline';
+  lastActive?: string;
+}
+
+interface Message {
   id: number;
   content: string;
-  createdAt: Date;
-  senderId: number;
-};
+  sender: string;
+  createdAt: string;
+}
 
-type Conversation = {
+interface Conversation {
   id: number;
-  name?: string;
-  updatedAt: Date;
-};
+  participants: string[];
+  lastMessage?: string;
+  lastMessageTime?: string;
+  unreadCount?: number;
+}
 
-// Remove the incorrect import
-// import { User, Message, Conversation } from '@prisma/client';
-
-// Type definitions for the data we'll be working with
-
-type ConversationWithParticipants = Conversation & {
-  participants: User[];
-  lastMessage?: Message;
-};
-
-type MessageWithSender = Message & {
-  sender: User;
-};
-
-// Removed unused fetchUsers function
-
-const fetchConversations = async (): Promise<ConversationWithParticipants[]> => {
-  // Fetch conversations from API endpoint
-  const response = await fetch('/api/conversations');
-  return response.json();
-};
-
-const fetchMessages = async (conversationId: number): Promise<MessageWithSender[]> => {
-  // Fetch messages for a specific conversation
-  const response = await fetch(`/api/conversations/${conversationId}/messages`);
-  return response.json();
-};
-
-const Messages = () => {
-  // Removed unused 'users' state variable
-  const [conversations, setConversations] = useState<ConversationWithParticipants[]>([]);
-  const [activeConversation, setActiveConversation] = useState<ConversationWithParticipants | null>(null);
-  const [messages, setMessages] = useState<MessageWithSender[]>([]);
+const MessagesPage = () => {
+  const { data: session, status } = useSession();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [activeConversation, setActiveConversation] = useState<number | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load users and conversations when the component mounts
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const conversationsData = await fetchConversations();
-        setConversations(conversationsData);
+  const currentUser = session?.user?.email || '';
 
-        // If we have conversations, set the first one as active
-        if (conversationsData.length > 0) {
-          setActiveConversation(conversationsData[0]);
-          const messagesData = await fetchMessages(conversationsData[0].id);
-          setMessages(messagesData);
-        }
+  // Fetch conversations and users when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      if (status !== 'authenticated') return;
+
+      try {
+        // Fetch conversations
+        const res = await fetch('/api/conversations');
+        const data = await res.json();
+        setConversations(data);
+
+        // Fetch users for the sidebar
+        const usersRes = await fetch('/api/users');
+        const usersData = await usersRes.json();
+        setUsers(usersData);
+
+        setLoading(false);
       } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
+        console.error('Error fetching data:', error);
         setLoading(false);
       }
     };
 
-    loadData();
-  }, []);
+    fetchData();
+  }, [status]);
+
+  // Fetch messages when active conversation changes
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!activeConversation) return;
+
+      try {
+        const res = await fetch(`/api/messages?conversationId=${activeConversation}`);
+        const data = await res.json();
+        setMessages(data);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    fetchMessages();
+  }, [activeConversation]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleConversationClick = async (conversation: ConversationWithParticipants) => {
-    setActiveConversation(conversation);
-    const messagesData = await fetchMessages(conversation.id);
-    setMessages(messagesData);
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !activeConversation) return;
-
     try {
-      // Send message to API endpoint
-      const response = await fetch(`/api/conversations/${activeConversation.id}/messages`, {
+      const response = await fetch('/api/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           content: newMessage,
-          // Assuming we have the current user's ID available
-          // For demo purposes, we're using an ID of 1
-          senderId: 1,
-          receiverId: activeConversation.participants.find(p => p.id !== 1)?.id || 2,
+          conversationId: activeConversation,
+          sender: currentUser,
         }),
       });
 
-      const savedMessage = await response.json();
-
-      // Update messages with the new one
-      setMessages([...messages, savedMessage]);
-      setNewMessage('');
+      if (response.ok) {
+        const newMessageObj = await response.json();
+        setMessages([...messages, newMessageObj]);
+        setNewMessage('');
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
 
-  const formatTime = (dateString: string | Date) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Removed unused filteredUsers variable
+
+  // Find other participant in conversation
+  const getOtherParticipant = (conversation: Conversation) => {
+    const otherUser = conversation.participants.find(p => p !== currentUser) || '';
+    const user = users.find(u => u.email === otherUser);
+    return user || { email: otherUser, status: 'offline' as const };
+  };
+
+  // Format timestamp
+  const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatDate = (dateString: string | Date) => {
-    const date = new Date(dateString);
-    const today = new Date();
+  if (status === 'loading' || loading) {
+    return <LoadingSpinner />;
+  }
 
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today';
-    }
-
-    return date.toLocaleDateString();
-  };
-
-  if (loading) {
-    return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </Container>
-    );
+  if (status === 'unauthenticated') {
+    redirect('/auth/signin');
   }
 
   return (
@@ -158,54 +152,61 @@ const Messages = () => {
         <Row className="justify-content-center">
           <Col lg={10}>
             <Card className="d-flex flex-row overflow-hidden">
-              {/* Conversations List */}
+              {/* People List */}
               <div className="p-3 border-end" style={{ width: 280, minHeight: '600px' }}>
                 <InputGroup className="mb-3">
                   <InputGroup.Text>
                     <i className="bi bi-search" />
                   </InputGroup.Text>
-                  <Form.Control placeholder="Search..." />
+                  <Form.Control
+                    placeholder="Search conversations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </InputGroup>
-                <ul className="list-unstyled mb-0">
+                <ul className="list-unstyled mb-0 conversation-list">
                   {conversations.map((conversation) => {
-                    // Find the other participant (not the current user)
-                    const otherParticipant = conversation.participants.find(p => p.id !== 1)
-                    || conversation.participants[0];
-
+                    const otherUser = getOtherParticipant(conversation);
                     return (
                       <div
                         key={conversation.id}
                         className={`d-flex align-items-start gap-2 p-2 rounded ${
-                          activeConversation?.id === conversation.id ? 'bg-body-tertiary' : ''
+                          activeConversation === conversation.id ? 'bg-body-tertiary' : ''
                         }`}
                         style={{ cursor: 'pointer' }}
                         role="button"
                         tabIndex={0}
-                        onClick={() => handleConversationClick(conversation)}
-                        onKeyDown={(e) => {
+                        onClick={() => setActiveConversation(conversation.id)}
+                        onKeyPress={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
-                            handleConversationClick(conversation);
+                            setActiveConversation(conversation.id);
                           }
                         }}
                       >
                         <Image
-                          src={`https://bootdey.com/img/Content/avatar/avatar${(otherParticipant.id % 8) + 1}.png`}
+                          src={otherUser.image || `https://ui-avatars.com/api/?name=$
+                            {encodeURIComponent(otherUser.email)}&background=random`}
                           alt="avatar"
                           width={45}
                           height={45}
                           roundedCircle
                         />
                         <div className="flex-grow-1">
-                          <div className="fw-semibold">{otherParticipant.email.split('@')[0]}</div>
-                          <div className="text-muted small text-truncate" style={{ maxWidth: '180px' }}>
-                            {conversation.lastMessage?.content || 'No messages yet'}
-                          </div>
-                        </div>
-                        {conversation.lastMessage && (
-                          <small className="text-muted">
-                            {formatTime(conversation.lastMessage.createdAt)}
+                          <div className="fw-semibold">{otherUser.displayName || otherUser.email}</div>
+                          <small
+                            className={`d-flex align-items-center ${
+                              otherUser.status === 'online' ? 'text-success' : 'text-secondary'
+                            }`}
+                          >
+                            <i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }} />
+                            {otherUser.status === 'online' ? 'online' : 'offline'}
                           </small>
-                        )}
+                          {conversation.lastMessage && (
+                            <small className="text-muted d-block text-truncate" style={{ maxWidth: '150px' }}>
+                              {conversation.lastMessage}
+                            </small>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -217,124 +218,124 @@ const Messages = () => {
                 {activeConversation ? (
                   <>
                     {/* Chat Header */}
-                    <div className="d-flex justify-content-between align-items-center border-bottom p-3">
-                      <div className="d-flex align-items-center">
-                        {activeConversation.participants.length > 0 && (
-                          <Image
-                            src={`https://bootdey.com/img/Content/avatar/avatar${
-                              (activeConversation.participants.find(p => p.id !== 1)?.id !== undefined
-                                ? (activeConversation.participants.find(p => p.id !== 1)!.id % 8) + 1
-                                : 1)
-                            }.png`}
-                            alt="avatar"
-                            width={40}
-                            height={40}
-                            roundedCircle
-                          />
-                        )}
-                        <div className="ms-2">
-                          <h6 className="mb-0">
-                            {activeConversation.name
-                              || activeConversation.participants.find(p => p.id !== 1)?.email.split('@')[0]
-                              || 'Chat'}
-                          </h6>
-                          <small>
-                            Last seen:
-                            {formatDate(activeConversation.updatedAt)}
-                          </small>
+                    {activeConversation && (
+                      <div className="d-flex justify-content-between align-items-center border-bottom p-3">
+                        <div className="d-flex align-items-center">
+                          {(() => {
+                            const conversation = conversations.find(c => c.id === activeConversation);
+                            if (!conversation) return null;
+
+                            const otherUser = getOtherParticipant(conversation);
+                            return (
+                              <>
+                                <Image
+                                  src={otherUser.image
+                                    || `https://ui-avatars.com/api/?name=$
+                                    {encodeURIComponent(otherUser.email)}&background=random`}
+                                  alt="avatar"
+                                  width={40}
+                                  height={40}
+                                  roundedCircle
+                                />
+                                <div className="ms-2">
+                                  <h6 className="mb-0">{otherUser.displayName || otherUser.email}</h6>
+                                  <small>
+                                    {(() => {
+                                      if (otherUser.status === 'online') {
+                                        return 'Online now';
+                                      }
+                                      if (otherUser.lastActive) {
+                                        return `Last seen: ${otherUser.lastActive}`;
+                                      }
+                                      return 'Offline';
+                                    })()}
+                                  </small>
+                                </div>
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
-                      <div className="d-none d-md-flex gap-2">
-                        <Button variant="outline-secondary" size="sm">
-                          <i className="bi bi-camera" />
-                        </Button>
-                        <Button variant="outline-primary" size="sm">
-                          <i className="bi bi-image" />
-                        </Button>
-                        <Button variant="outline-info" size="sm">
-                          <i className="bi bi-gear" />
-                        </Button>
-                      </div>
-                    </div>
+                    )}
 
                     {/* Chat History */}
                     <div className="flex-grow-1 p-3 overflow-auto bg-white">
                       <ul className="list-unstyled mb-0">
-                        {messages.map((message, index) => {
-                          const isSelf = message.senderId === 1; // Assuming current user ID is 1
-                          const showDate = index === 0
-                          || formatDate(messages[index - 1].createdAt) !== formatDate(message.createdAt);
-
-                          return (
-                            <React.Fragment key={message.id}>
-                              {showDate && (
-                                <li className="text-center my-3">
-                                  <small className="bg-light px-3 py-1 rounded-pill">
-                                    {formatDate(message.createdAt)}
-                                  </small>
-                                </li>
+                        {messages.map((message) => (
+                          <li key={message.id} className={`mb-4 ${message.sender === currentUser ? 'text-end' : ''}`}>
+                            <div className="text-muted small mb-1">{formatTime(message.createdAt)}</div>
+                            <div className="d-flex">
+                              {message.sender !== currentUser && (
+                                <Image
+                                  src={`https://ui-avatars.com/api/?name=$
+                                    {encodeURIComponent(message.sender)}&background=random`}
+                                  alt="avatar"
+                                  width={40}
+                                  height={40}
+                                  roundedCircle
+                                  className="me-2 align-self-end"
+                                />
                               )}
-                              <li className={`mb-3 ${isSelf ? 'text-end' : ''}`}>
-                                <div className="text-muted small mb-1">
-                                  {formatTime(message.createdAt)}
-                                </div>
-                                <div className="d-flex align-items-end gap-2 mb-1">
-                                  {!isSelf && (
-                                    <Image
-                                      src={`https://bootdey.com/img/Content/avatar/avatar
-                                        ${(message.sender.id % 8) + 1}.png`}
-                                      alt="avatar"
-                                      width={30}
-                                      height={30}
-                                      roundedCircle
-                                    />
-                                  )}
-                                  <div
-                                    className={`d-inline-block p-3 rounded ${
-                                      isSelf ? 'bg-primary text-white ms-auto' : 'bg-light'
-                                    }`}
-                                  >
-                                    {message.content}
-                                  </div>
-                                  {isSelf && (
-                                    <Image
-                                      src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                                      alt="avatar"
-                                      width={30}
-                                      height={30}
-                                      roundedCircle
-                                    />
-                                  )}
-                                </div>
-                              </li>
-                            </React.Fragment>
-                          );
-                        })}
+                              <div
+                                className={`${
+                                  message.sender === currentUser
+                                    ? 'bg-success-subtle ms-auto'
+                                    : 'bg-secondary-subtle'
+                                } d-inline-block p-3 rounded mt-2`}
+                              >
+                                {message.content}
+                              </div>
+                              {message.sender === currentUser && (
+                                <Image
+                                  src={`https://ui-avatars.com/api/?name=$
+                                    {encodeURIComponent(currentUser)}&background=random`}
+                                  alt="avatar"
+                                  width={40}
+                                  height={40}
+                                  roundedCircle
+                                  className="ms-2 align-self-end"
+                                />
+                              )}
+                            </div>
+                          </li>
+                        ))}
                         <div ref={messagesEndRef} />
                       </ul>
                     </div>
 
                     {/* Chat Input */}
                     <div className="border-top p-3">
-                      <Form onSubmit={handleSendMessage}>
-                        <InputGroup>
-                          <Form.Control
-                            placeholder="Type your message..."
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                          />
-                          <Button type="submit" variant="primary">
-                            <i className="bi bi-send me-1" />
-                            Send
-                          </Button>
-                        </InputGroup>
-                      </Form>
+                      <InputGroup>
+                        <Form.Control
+                          placeholder="Type your message here..."
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                        />
+                        <Button
+                          variant="success"
+                          onClick={handleSendMessage}
+                          disabled={!newMessage.trim()}
+                        >
+                          <i className="bi bi-send" />
+                          Send
+                        </Button>
+                      </InputGroup>
                     </div>
                   </>
                 ) : (
-                  <div className="d-flex flex-column justify-content-center align-items-center h-100">
-                    <i className="bi bi-chat-text" style={{ fontSize: '4rem', color: '#ddd' }} />
-                    <h5 className="mt-3">Select a conversation to start chatting</h5>
+                  <div className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4">
+                    <Image
+                      src="/raw.png"
+                      alt="UH Marketplace Logo"
+                      width={100}
+                      height={100}
+                      className="mb-4 opacity-50"
+                    />
+                    <h4>Select a conversation</h4>
+                    <p className="text-muted">
+                      Choose a conversation from the list or start a new one to begin messaging
+                    </p>
                   </div>
                 )}
               </div>
@@ -346,4 +347,4 @@ const Messages = () => {
   );
 };
 
-export default Messages;
+export default MessagesPage;

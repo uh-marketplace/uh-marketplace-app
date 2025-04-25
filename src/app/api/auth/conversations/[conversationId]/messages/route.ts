@@ -1,25 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server';
-// eslint-disable-next-line import/extensions
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
+import authOptions from '@/lib/authOptions';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { conversationId: string } },
-) {
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const conversationId = searchParams.get('conversationId');
+
+  if (!conversationId) {
+    return NextResponse.json({ error: 'Conversation ID is required' }, { status: 400 });
+  }
+
   try {
-    const conversationId = parseInt(params.conversationId, 10);
+    // First, check if the user is a participant in this conversation
+    const conversation = await prisma.conversation.findUnique({
+      where: {
+        id: parseInt(conversationId, 10),
+      },
+    });
 
-    if (Number.isNaN(conversationId)) {
-      return NextResponse.json({ error: 'Invalid conversation ID' }, { status: 400 });
+    if (!conversation || !conversation.participants.includes(session.user.email)) {
+      return NextResponse.json({ error: 'Unauthorized access to this conversation' }, { status: 403 });
     }
 
-    // Get all messages for the conversation
+    // Get messages for this conversation
     const messages = await prisma.message.findMany({
       where: {
-        conversationId,
-      },
-      include: {
-        sender: true,
+        conversationId: parseInt(conversationId, 10),
       },
       orderBy: {
         createdAt: 'asc',
@@ -33,56 +46,38 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { conversationId: string } },
-) {
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const conversationId = parseInt(params.conversationId, 10);
-    const body = await req.json();
-    const { content, senderId, receiverId } = body;
+    const data = await request.json();
+    const { content, conversationId } = data;
 
-    if (Number.isNaN(conversationId)) {
-      return NextResponse.json({ error: 'Invalid conversation ID' }, { status: 400 });
+    if (!content || !conversationId) {
+      return NextResponse.json({ error: 'Content and conversation ID are required' }, { status: 400 });
     }
 
-    // Validate required fields
-    if (!content || !senderId || !receiverId) {
-      return NextResponse.json(
-        { error: 'Missing required fields: content, senderId, receiverId' },
-        { status: 400 },
-      );
-    }
-
-    // Check if conversation exists and user is a participant
-    const conversation = await prisma.conversation.findFirst({
+    // Check if the user is a participant in this conversation
+    const conversation = await prisma.conversation.findUnique({
       where: {
         id: conversationId,
-        participants: {
-          some: {
-            id: senderId,
-          },
-        },
       },
     });
 
-    if (!conversation) {
-      return NextResponse.json(
-        { error: 'Conversation not found or user is not a participant' },
-        { status: 404 },
-      );
+    if (!conversation || !conversation.participants.includes(session.user.email)) {
+      return NextResponse.json({ error: 'Unauthorized access to this conversation' }, { status: 403 });
     }
 
     // Create the message
-    const message = await prisma.message.create({
+    const newMessage = await prisma.message.create({
       data: {
         content,
-        senderId,
-        receiverId,
+        sender: session.user.email,
         conversationId,
-      },
-      include: {
-        sender: true,
       },
     });
 
@@ -96,7 +91,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(message, { status: 201 });
+    return NextResponse.json(newMessage);
   } catch (error) {
     console.error('Error creating message:', error);
     return NextResponse.json({ error: 'Failed to create message' }, { status: 500 });
