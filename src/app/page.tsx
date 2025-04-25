@@ -1,6 +1,7 @@
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { prisma } from '@/lib/prisma';
 import ItemCard from '@/components/ItemCard';
+import Link from 'next/link';
 
 export default async function Home() {
   const items = await prisma.item.findMany();
@@ -19,9 +20,11 @@ export default async function Home() {
                 Welcome to UH Marketplace – a safe and easy place to trade goods within the UH Manoa community.
                 Post what you want, browse what you need, and keep it all on campus.
               </p>
-              <Button variant="success" size="lg">
-                Start Browsing
-              </Button>
+              <Link href="/explore" passHref>
+                <Button variant="success" size="lg">
+                  Start Browsing
+                </Button>
+              </Link>
             </Col>
           </Row>
 
