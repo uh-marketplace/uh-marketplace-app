@@ -2,28 +2,49 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { prisma } from '@/lib/prisma';
-import { useSession } from 'next-auth/react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+
+const supabase = createClientComponentClient();
 
 const ProfilePage: React.FC = () => {
-  const { data: session, status } = useSession();
-  const [userItems, setUserItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [items, setItems] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchItems = async () => {
-      if (session?.user?.email) {
-        const res = await fetch(`/api/user-items?email=${session.user.email}`);
-        const data = await res.json();
-        setUserItems(data);
-      }
-      setLoading(false);
-    };
-    fetchItems();
-  }, [session]);
+    const fetchUserData = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  if (status === 'loading') return <p className="text-center mt-5">Loading...</p>;
-  if (!session?.user) return <p className="text-center mt-5">Please sign in to view your profile.</p>;
+      const userEmail = session?.user?.email ?? null;
+      setEmail(userEmail);
+
+
+      if (userEmail) {
+        const { data: userData } = await supabase
+          .from('User')
+          .select('*')
+          .eq('email', userEmail)
+          .single();
+
+        setUserInfo(userData);
+
+        const { data: userItems } = await supabase
+          .from('Item')
+          .select('*')
+          .eq('owner', userEmail);
+
+        setItems(userItems || []);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  if (!userInfo) {
+    return <p className="text-center mt-5">Please sign in to view your profile.</p>;
+  }
 
   return (
     <div className="container">
@@ -36,9 +57,15 @@ const ProfilePage: React.FC = () => {
           style={{ borderRadius: '50%', objectFit: 'cover' }}
         />
         <div className="profile-details">
-          <h2>{session.user.name || 'UH User'}</h2>
-          <p>Email: {session.user.email}</p>
-          <p>Member since: {new Date().toLocaleDateString()}</p>
+          <h2>
+            {userInfo.email || 'UH User'}
+          </h2>
+          <p>
+            Email: {userInfo.email}
+          </p>
+          <p>
+            Member since: {new Date().toLocaleDateString()}
+          </p>
         </div>
       </div>
 
@@ -50,8 +77,8 @@ const ProfilePage: React.FC = () => {
       <section>
         <h3>Posted Items</h3>
         <div className="items-grid">
-          {userItems.map((item: any) => (
-            <div className="item-card" key={item.id}>
+          {items.map((item) => (
+            <div key={item.id} className="item-card">
               <Image
                 src={item.imageUrl}
                 alt={item.name}
@@ -59,53 +86,25 @@ const ProfilePage: React.FC = () => {
                 height={120}
                 style={{ objectFit: 'cover', borderRadius: '6px' }}
               />
-              <p>{item.name} - ${item.price}</p>
+              <p>
+                {item.name} - ${item.price}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      <style>{`
-        * { box-sizing: border-box; }
-        .container {
-          max-width: 1000px;
-          margin: 0 auto;
-          padding: 2rem 1rem;
-          font-family: Arial, sans-serif;
-        }
-        .profile-banner {
-          background-color: #00664b;
-          color: white;
-          padding: 2rem;
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
-          border-radius: 10px;
-        }
-        .profile-details h2 { margin: 0; }
-        section {
-          margin-top: 2rem;
-          padding: 1.5rem;
-          background-color: #f9f9f9;
-          border-radius: 10px;
-        }
-        h3 {
-          margin-bottom: 1rem;
-          color: #333;
-        }
-        .items-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-          gap: 1rem;
-        }
-        .item-card {
-          background: white;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          padding: 1rem;
-          text-align: center;
-        }
-      `}</style>
+      <section>
+        <h3>Manage Your Posts</h3>
+        <div className="manage-buttons">
+          <button type="button" onClick={() => console.log('Edit Post Clicked')}>
+            Edit Post
+          </button>
+          <button type="button" onClick={() => console.log('Delete Post Clicked')}>
+            Delete Post
+          </button>
+        </div>
+      </section>
     </div>
   );
 };
