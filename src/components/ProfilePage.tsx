@@ -36,11 +36,11 @@ const ProfilePage: React.FC = () => {
         error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError || !user || !user.email) {
+      /* if (userError || !user || !user.email) {
         console.warn('User not signed in or session error.');
         setLoading(false);
         return;
-      }
+      } */
 
       const userEmail = user.email;
 
