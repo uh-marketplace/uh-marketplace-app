@@ -87,13 +87,17 @@ const ProfilePage: React.FC = () => {
                 style={{ objectFit: 'cover', borderRadius: '6px' }}
               />
               <p>{item.name}</p>
-              <p>${item.price}</p>
+              <p>
+                $
+                {item.price}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      <style jsx>{`
+      <style>
+        {`
         * {
           box-sizing: border-box;
         }
@@ -144,7 +148,8 @@ const ProfilePage: React.FC = () => {
           padding: 1rem;
           text-align: center;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };
