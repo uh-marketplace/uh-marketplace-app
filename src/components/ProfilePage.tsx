@@ -2,35 +2,40 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { prisma } from '@/lib/prisma';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import type { Database } from '@/lib/database.types';
+
+const supabase = createClientComponentClient<Database>();
 
 const ProfilePage: React.FC = () => {
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [items, setItems] = useState<any[]>([]);
+  const [userInfo, setUserInfo] = useState<Database['public']['Tables']['User']['Row'] | null>(null);
+  const [items, setItems] = useState<Database['public']['Tables']['Item']['Row'][]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      // Replace this with your own auth logic if needed
-      const email = localStorage.getItem('userEmail'); // or use your auth provider
-      if (!email) return;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      try {
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
-        setUserInfo(user);
+      const userEmail = session?.user?.email ?? null;
+      if (!userEmail) return;
 
-        const userItems = await prisma.item.findMany({
-          where: { owner: email },
-        });
+      const { data: userData } = await supabase
+        .from('User')
+        .select('*')
+        .eq('email', userEmail)
+        .single();
 
-        setItems(userItems);
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      } finally {
-        setLoading(false);
-      }
+      setUserInfo(userData);
+
+      const { data: userItems } = await supabase
+        .from('Item')
+        .select('*')
+        .eq('owner', userEmail);
+
+      setItems(userItems ?? []);
+      setLoading(false);
     };
 
     fetchUserData();
@@ -52,8 +57,10 @@ const ProfilePage: React.FC = () => {
         />
         <div className="profile-details">
           <h2>{userInfo?.email ?? 'UH User'}</h2>
-          <p>Email: {userInfo?.email}</p>
-          <p>Member since: {new Date().toLocaleDateString()}</p>
+          <p>Email:</p>
+          <p>{userInfo?.email}</p>
+          <p>Member since:</p>
+          <p>{new Date().toLocaleDateString()}</p>
         </div>
       </div>
 
@@ -74,18 +81,13 @@ const ProfilePage: React.FC = () => {
                 height={120}
                 style={{ objectFit: 'cover', borderRadius: '6px' }}
               />
-              <p>
-                {item.name} - ${item.price}
-              </p>
+              <p>{item.name} - ${item.price}</p>
             </div>
           ))}
         </div>
       </section>
 
       <style jsx>{`
-        * {
-          box-sizing: border-box;
-        }
         .container {
           max-width: 1000px;
           margin: 0 auto;
