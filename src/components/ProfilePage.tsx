@@ -40,7 +40,7 @@ const ProfilePage = () => {
       <p>
         <strong>
           Email:
-        </strong> 
+        </strong>
         {email}
       </p>
     </div>
