@@ -64,7 +64,12 @@ export default function ProfilePage() {
 
       <div className="w-full max-w-2xl bg-white rounded shadow p-6 mb-6">
         <h2 className="text-2xl font-semibold mb-4">Details</h2>
-        <p><strong>Email:</strong> {email}</p>
+        <p>
+          <strong>
+              Email:
+          </strong>
+          {email}
+          </p>
         <p className="mt-2">
           <strong>Bio:</strong>{' '}
           {isEditing ? (
@@ -84,12 +89,14 @@ export default function ProfilePage() {
             <button
               onClick={handleSaveBio}
               className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-4 rounded mr-2"
+              type="button"
             >
               Save
             </button>
             <button
               onClick={() => setIsEditing(false)}
               className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-1 px-4 rounded"
+              type="button"
             >
               Cancel
             </button>
