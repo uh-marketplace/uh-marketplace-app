@@ -16,5 +16,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ email: user.email, bio: user.bio, });
+  return NextResponse.json({ email: user.email, bio: user.bio });
 }
