@@ -127,6 +127,7 @@ export async function createUser(credentials: { email: string; password: string 
     data: {
       email: credentials.email,
       password,
+      bio: '',
     },
   });
 }
