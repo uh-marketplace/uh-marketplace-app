@@ -66,12 +66,15 @@ export default function ProfilePage() {
         <h2 className="text-2xl font-semibold mb-4">Details</h2>
         <p>
           <strong>
-              Email:
+            Email:
           </strong>
           {email}
-          </p>
+        </p>
         <p className="mt-2">
-          <strong>Bio:</strong>{' '}
+          <strong>
+            Bio:
+          </strong>
+          {' '}
           {isEditing ? (
             <input
               className="border p-1 rounded w-full mt-1"
@@ -108,6 +111,7 @@ export default function ProfilePage() {
               setIsEditing(true);
             }}
             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            type="button"
           >
             Edit Bio
           </button>
