@@ -14,6 +14,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'external-content.duckduckgo.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.britannica.com', // 🔥 ADD THIS
+      },
     ],
   },
 };

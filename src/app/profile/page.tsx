@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { redirect, useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Item {
   id: number;
@@ -78,7 +79,8 @@ export default function ProfilePage() {
   };
 
   const handleDeleteItem = async (itemId: number) => {
-    const confirmDelete = confirm('Are you sure you want to delete this item?');
+    // eslint-disable-next-line no-restricted-globals
+    const confirmDelete = window.confirm('Are you sure you want to delete this item?');
     if (!confirmDelete) return;
 
     const res = await fetch('/api/delete-item', {
@@ -90,7 +92,8 @@ export default function ProfilePage() {
     if (res.ok) {
       setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
     } else {
-      alert('Failed to delete item.');
+      // eslint-disable-next-line no-alert
+      window.alert('Failed to delete item.');
     }
   };
 
@@ -106,11 +109,13 @@ export default function ProfilePage() {
       <div className="w-full max-w-2xl bg-white rounded shadow p-6 mb-6 flex flex-col items-center">
         <h2 className="text-2xl font-semibold mb-6 text-center">Details</h2>
 
-        {/* Wrap the text and button together */}
         <div className="flex flex-col items-center justify-center space-y-4">
-          <p className="text-center"><strong>Email:</strong> {email}</p>
-          <p className="text-center">
-            <strong>Bio:</strong>{' '}
+          <div className="text-center">
+            <strong>Email:</strong><br />
+            {email}
+          </div>
+          <div className="text-center">
+            <strong>Bio:</strong><br />
             {isEditing ? (
               <input
                 className="border p-1 rounded w-full mt-1 text-center"
@@ -121,7 +126,7 @@ export default function ProfilePage() {
             ) : (
               bio || 'No bio set'
             )}
-          </p>
+          </div>
 
           {isEditing ? (
             <div className="flex gap-4">
@@ -175,21 +180,30 @@ export default function ProfilePage() {
                 style={{ width: '250px' }}
               >
                 {/* Image */}
-                <img
+                <Image
                   src={item.imageUrl}
                   alt={item.name}
-                  style={{ width: '150px', height: 'auto', borderRadius: '8px' }}
-                  className="mb-4"
+                  width={150}
+                  height={150}
+                  className="rounded mb-4 object-contain"
                 />
 
-                {/* Item Info */}
+                {/* Info */}
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">${item.price.toFixed(2)}</p>
-                <p className="text-gray-600 text-center">Location: {item.location}</p>
-                <p className="text-gray-600 text-center">Condition: {item.condition}</p>
-                <p className="text-gray-600 text-center mt-2">{item.description}</p>
+                <p className="text-gray-600 text-center">
+                  ${item.price.toFixed(2)}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Location: {item.location}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Condition: {item.condition}
+                </p>
+                <p className="text-gray-600 text-center mt-2">
+                  {item.description}
+                </p>
 
-                {/* Action Buttons */}
+                {/* Buttons */}
                 <div className="flex gap-2 mt-4">
                   <button
                     onClick={() => router.push(`/edit/${item.id}`)}
