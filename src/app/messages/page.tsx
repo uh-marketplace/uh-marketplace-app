@@ -7,6 +7,7 @@
 /* eslint-disable max-len */
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react/jsx-no-bind */
+/* eslint-disable jsx-a11y/label-has-associated-control */
 
 'use client';
 
@@ -118,6 +119,7 @@ const Messages = () => {
     };
 
     fetchData();
+
     // If we're in development/testing and don't have real data yet
     if (process.env.NODE_ENV === 'development') {
       // Set a timeout to simulate loading
@@ -127,7 +129,7 @@ const Messages = () => {
       return () => clearTimeout(timer);
     }
 
-    return undefined; // Explicitly return undefined to satisfy the requirement
+    return undefined;
   }, [status]);
 
   // Fetch messages when active conversation changes
@@ -219,10 +221,14 @@ const Messages = () => {
                     <InputGroup.Text>
                       <i className="bi bi-search" />
                     </InputGroup.Text>
-                    <Form.Control placeholder="Search..." />
+                    <Form.Control
+                      placeholder="Search..."
+                      id="search-input-fallback"
+                      aria-label="Search"
+                    />
                   </InputGroup>
                   <ul className="list-unstyled mb-0">
-                    {sampleUsers.map((user) => (
+                    {sampleUsers.map((user, index) => (
                       <li
                         key={user.name}
                         className={`d-flex align-items-start gap-2 p-2 rounded ${user.active ? 'bg-body-tertiary' : ''}`}
@@ -230,7 +236,7 @@ const Messages = () => {
                       >
                         <Image
                           src={user.img}
-                          alt="avatar"
+                          alt={`${user.name} avatar`}
                           width={45}
                           height={45}
                           roundedCircle
@@ -265,16 +271,16 @@ const Messages = () => {
                       </div>
                     </div>
                     <div className="d-none d-md-flex gap-2">
-                      <Button variant="outline-secondary" size="sm">
+                      <Button variant="outline-secondary" size="sm" aria-label="Camera">
                         <i className="bi bi-camera" />
                       </Button>
-                      <Button variant="outline-primary" size="sm">
+                      <Button variant="outline-primary" size="sm" aria-label="Image">
                         <i className="bi bi-image" />
                       </Button>
-                      <Button variant="outline-info" size="sm">
+                      <Button variant="outline-info" size="sm" aria-label="Settings">
                         <i className="bi bi-gear" />
                       </Button>
-                      <Button variant="outline-warning" size="sm">
+                      <Button variant="outline-warning" size="sm" aria-label="Help">
                         <i className="bi bi-question-circle" />
                       </Button>
                     </div>
@@ -318,7 +324,11 @@ const Messages = () => {
                       <InputGroup.Text>
                         <i className="bi bi-send" />
                       </InputGroup.Text>
-                      <Form.Control placeholder="Enter text here..." />
+                      <Form.Control
+                        placeholder="Enter text here..."
+                        id="message-input-fallback"
+                        aria-label="Enter message"
+                      />
                     </InputGroup>
                   </div>
                 </div>
@@ -343,9 +353,11 @@ const Messages = () => {
                     <i className="bi bi-search" />
                   </InputGroup.Text>
                   <Form.Control
+                    id="search-conversations"
                     placeholder="Search conversations..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label="Search conversations"
                   />
                 </InputGroup>
                 <ul className="list-unstyled mb-0 conversation-list">
@@ -369,7 +381,7 @@ const Messages = () => {
                       >
                         <Image
                           src={otherUser.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.email)}&background=random`}
-                          alt="avatar"
+                          alt={`${otherUser.email} avatar`}
                           width={45}
                           height={45}
                           roundedCircle
@@ -413,7 +425,7 @@ const Messages = () => {
                               <>
                                 <Image
                                   src={otherUser.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.email)}&background=random`}
-                                  alt="avatar"
+                                  alt={`${otherUser.email} avatar`}
                                   width={40}
                                   height={40}
                                   roundedCircle
@@ -449,7 +461,7 @@ const Messages = () => {
                               {message.sender !== currentUser && (
                                 <Image
                                   src={`https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender)}&background=random`}
-                                  alt="avatar"
+                                  alt={`${message.sender} avatar`}
                                   width={40}
                                   height={40}
                                   roundedCircle
@@ -468,7 +480,7 @@ const Messages = () => {
                               {message.sender === currentUser && (
                                 <Image
                                   src={`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser)}&background=random`}
-                                  alt="avatar"
+                                  alt="Your avatar"
                                   width={40}
                                   height={40}
                                   roundedCircle
@@ -486,15 +498,18 @@ const Messages = () => {
                     <div className="border-top p-3">
                       <InputGroup>
                         <Form.Control
+                          id="message-input"
                           placeholder="Type your message here..."
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
                           onKeyPress={handleKeyPress}
+                          aria-label="Type your message"
                         />
                         <Button
                           variant="success"
                           onClick={handleSendMessage}
                           disabled={!newMessage.trim()}
+                          aria-label="Send message"
                         >
                           <i className="bi bi-send" />
                           Send
