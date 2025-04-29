@@ -72,13 +72,3 @@ model Item {
   description String
 }
 
-model Item {
-  id        Int       @id @default(autoincrement())
-  name      String
-  condition Condition @default(good)
-  price     Float
-  location  String
-  owner     String
-  imageUrl  String
-  description String
-}
