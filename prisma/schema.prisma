@@ -8,7 +8,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-
 }
 
 model User {
@@ -16,6 +15,7 @@ model User {
   email          String          @unique
   password       String
   role           Role            @default(USER)
+  bio            String?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   sentMessages   Message[]       @relation("SentMessages")
@@ -40,12 +40,10 @@ model Message {
   conversationId Int
 }
 
-
 enum Role {
   USER
   ADMIN
 }
-
 
 enum Condition {
   good
@@ -71,4 +69,3 @@ model Item {
   imageUrl  String
   description String
 }
-
