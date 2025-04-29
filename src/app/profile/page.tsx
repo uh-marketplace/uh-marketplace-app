@@ -118,7 +118,10 @@ export default function ProfilePage() {
             {email}
           </div>
           <div className="text-center">
-            <strong>Bio:</strong><br />
+            <strong>
+              Bio:
+            </strong>
+            <br />
             {isEditing ? (
               <input
                 className="border p-1 rounded w-full mt-1 text-center"
