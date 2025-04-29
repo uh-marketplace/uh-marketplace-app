@@ -242,7 +242,7 @@ const Messages = () => {
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            // Handle activation
+                            console.log('Enter key pressed');
                           }
                         }}
                       >
