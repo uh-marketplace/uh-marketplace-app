@@ -6,6 +6,10 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable max-len */
 /* eslint-disable react/no-unstable-nested-components */
+/* eslint-disable react/jsx-no-bind */
+/* eslint-disable max-len */
+/* eslint-disable react/no-unstable-nested-components */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 'use client';
 
