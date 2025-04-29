@@ -1,23 +1,17 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-unused-prop-types */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react/no-unknown-property */
-/* eslint-disable react/button-has-type */
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable max-len */
-/* eslint-disable react/no-unstable-nested-components */
-/* eslint-disable react/jsx-no-bind */
-/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable react/jsx-one-expression-per-line */
+/* eslint-disable import/no-extraneous-dependencies */
 
 'use client';
 
-import { Container, Row, Col, Card, Form, InputGroup, Button, Image } from 'react-bootstrap';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Button, Card, Col, Container, Form, Image, InputGroup, Row } from 'react-bootstrap';
 import { useSession } from 'next-auth/react';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { redirect } from 'next/navigation';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
-// Define types for our data
 interface User {
   email: string;
   displayName?: string;
@@ -41,8 +35,8 @@ interface Conversation {
   unreadCount?: number;
 }
 
-// Sample user data
-const sampleUsers = [
+// Mock data for development/testing
+const mockUsers = [
   {
     name: 'Vincent Porter',
     status: 'left 7 mins ago',
@@ -82,6 +76,7 @@ const sampleUsers = [
   },
 ];
 
+// Main component
 const Messages = () => {
   const { data: session, status } = useSession();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -95,7 +90,6 @@ const Messages = () => {
 
   const currentUser = session?.user?.email || '';
 
-  // Fetch conversations and users when component mounts
   useEffect(() => {
     const fetchData = async () => {
       if (status !== 'authenticated') return;
@@ -120,19 +114,17 @@ const Messages = () => {
 
     fetchData();
 
-    // If we're in development/testing and don't have real data yet
     if (process.env.NODE_ENV === 'development') {
-      // Set a timeout to simulate loading
+      // For development, ensure we exit loading state
       const timer = setTimeout(() => {
         setLoading(false);
       }, 1000);
       return () => clearTimeout(timer);
     }
 
-    return undefined;
+    return () => {}; // Satisfy ESLint
   }, [status]);
 
-  // Fetch messages when active conversation changes
   useEffect(() => {
     const fetchMessages = async () => {
       if (!activeConversation) return;
@@ -149,13 +141,13 @@ const Messages = () => {
     fetchMessages();
   }, [activeConversation]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !activeConversation) return;
+
     try {
       const response = await fetch('/api/messages', {
         method: 'POST',
@@ -186,17 +178,27 @@ const Messages = () => {
     }
   };
 
-  // Find other participant in conversation
   const getOtherParticipant = (conversation: Conversation) => {
     const otherUser = conversation.participants.find(p => p !== currentUser) || '';
     const user = users.find(u => u.email === otherUser);
     return user || { email: otherUser, status: 'offline' as const };
   };
 
-  // Format timestamp
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleConversationClick = (conversationId: number) => {
+    setActiveConversation(conversationId);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
   };
 
   if (status === 'loading' || loading) {
@@ -207,7 +209,7 @@ const Messages = () => {
     redirect('/auth/signin');
   }
 
-  // Fallback to sample UI if no real data
+  // Mock UI when no data available
   if (conversations.length === 0) {
     return (
       <main className="bg-light py-5 min-vh-100">
@@ -219,24 +221,34 @@ const Messages = () => {
                 <div className="p-3 border-end" style={{ width: 280, minHeight: '600px' }}>
                   <InputGroup className="mb-3">
                     <InputGroup.Text>
-                      <i className="bi bi-search" />
+                      <i className="bi bi-search" aria-hidden="true" />
                     </InputGroup.Text>
                     <Form.Control
+                      id="mock-search-input"
                       placeholder="Search..."
-                      id="search-input-fallback"
-                      aria-label="Search"
+                      aria-label="Search contacts"
                     />
                   </InputGroup>
                   <ul className="list-unstyled mb-0">
-                    {sampleUsers.map((user, index) => (
-                      <li
+                    {mockUsers.map((user) => (
+                      <div
                         key={user.name}
-                        className={`d-flex align-items-start gap-2 p-2 rounded ${user.active ? 'bg-body-tertiary' : ''}`}
+                        className={`d-flex align-items-start gap-2 p-2 rounded ${
+                          user.active ? 'bg-body-tertiary' : ''
+                        }`}
                         style={{ cursor: 'pointer' }}
+                        onClick={() => {}}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            // Handle activation
+                          }
+                        }}
                       >
                         <Image
                           src={user.img}
-                          alt={`${user.name} avatar`}
+                          alt={`${user.name}'s avatar`}
                           width={45}
                           height={45}
                           roundedCircle
@@ -244,11 +256,11 @@ const Messages = () => {
                         <div className="flex-grow-1">
                           <div className="fw-semibold">{user.name}</div>
                           <small className={`d-flex align-items-center ${user.statusClass}`}>
-                            <i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }} />
+                            <i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }} aria-hidden="true" />
                             {user.status}
                           </small>
                         </div>
-                      </li>
+                      </div>
                     ))}
                   </ul>
                 </div>
@@ -260,7 +272,7 @@ const Messages = () => {
                     <div className="d-flex align-items-center">
                       <Image
                         src="https://bootdey.com/img/Content/avatar/avatar2.png"
-                        alt="avatar"
+                        alt="Aiden Chavez's avatar"
                         width={40}
                         height={40}
                         roundedCircle
@@ -272,16 +284,16 @@ const Messages = () => {
                     </div>
                     <div className="d-none d-md-flex gap-2">
                       <Button variant="outline-secondary" size="sm" aria-label="Camera">
-                        <i className="bi bi-camera" />
+                        <i className="bi bi-camera" aria-hidden="true" />
                       </Button>
                       <Button variant="outline-primary" size="sm" aria-label="Image">
-                        <i className="bi bi-image" />
+                        <i className="bi bi-image" aria-hidden="true" />
                       </Button>
                       <Button variant="outline-info" size="sm" aria-label="Settings">
-                        <i className="bi bi-gear" />
+                        <i className="bi bi-gear" aria-hidden="true" />
                       </Button>
                       <Button variant="outline-warning" size="sm" aria-label="Help">
-                        <i className="bi bi-question-circle" />
+                        <i className="bi bi-question-circle" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
@@ -291,28 +303,50 @@ const Messages = () => {
                     <ul className="list-unstyled mb-0">
                       <li className="mb-4 text-end">
                         <div className="text-muted small mb-1">10:10 AM, Today</div>
-                        <Image
-                          src="https://bootdey.com/img/Content/avatar/avatar7.png"
-                          alt="avatar"
-                          width={40}
-                          height={40}
-                          roundedCircle
-                          className="ms-2"
-                        />
-                        <div className="bg-info-subtle d-inline-block p-3 rounded mt-2">
-                          Buy this thing from me now.
+                        <div className="d-flex justify-content-end align-items-end">
+                          <div className="bg-info-subtle d-inline-block p-3 rounded mt-2">
+                            Buy this thing from me now.
+                          </div>
+                          <Image
+                            src="https://bootdey.com/img/Content/avatar/avatar7.png"
+                            alt="Your avatar"
+                            width={40}
+                            height={40}
+                            roundedCircle
+                            className="ms-2"
+                          />
                         </div>
                       </li>
                       <li className="mb-4">
                         <div className="text-muted small mb-1">10:12 AM, Today</div>
-                        <div className="bg-secondary-subtle d-inline-block p-3 rounded">
-                          I buy for $5
+                        <div className="d-flex align-items-end">
+                          <Image
+                            src="https://bootdey.com/img/Content/avatar/avatar2.png"
+                            alt="Aiden's avatar"
+                            width={40}
+                            height={40}
+                            roundedCircle
+                            className="me-2"
+                          />
+                          <div className="bg-secondary-subtle d-inline-block p-3 rounded">
+                            I buy for $5
+                          </div>
                         </div>
                       </li>
                       <li>
                         <div className="text-muted small mb-1">10:15 AM, Today</div>
-                        <div className="bg-secondary-subtle d-inline-block p-3 rounded">
-                          Or for free is good too
+                        <div className="d-flex align-items-end">
+                          <Image
+                            src="https://bootdey.com/img/Content/avatar/avatar2.png"
+                            alt="Aiden's avatar"
+                            width={40}
+                            height={40}
+                            roundedCircle
+                            className="me-2"
+                          />
+                          <div className="bg-secondary-subtle d-inline-block p-3 rounded">
+                            Or for free is good too
+                          </div>
                         </div>
                       </li>
                     </ul>
@@ -321,14 +355,17 @@ const Messages = () => {
                   {/* Chat Input */}
                   <div className="border-top p-3">
                     <InputGroup>
-                      <InputGroup.Text>
-                        <i className="bi bi-send" />
-                      </InputGroup.Text>
                       <Form.Control
+                        id="mock-message-input"
                         placeholder="Enter text here..."
-                        id="message-input-fallback"
-                        aria-label="Enter message"
+                        aria-label="Type a message"
                       />
+                      <Button
+                        variant="primary"
+                        aria-label="Send message"
+                      >
+                        <i className="bi bi-send" aria-hidden="true" /> Send
+                      </Button>
                     </InputGroup>
                   </div>
                 </div>
@@ -350,13 +387,13 @@ const Messages = () => {
               <div className="p-3 border-end" style={{ width: 280, minHeight: '600px' }}>
                 <InputGroup className="mb-3">
                   <InputGroup.Text>
-                    <i className="bi bi-search" />
+                    <i className="bi bi-search" aria-hidden="true" />
                   </InputGroup.Text>
                   <Form.Control
-                    id="search-conversations"
+                    id="search-conversations-input"
                     placeholder="Search conversations..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={handleSearchChange}
                     aria-label="Search conversations"
                   />
                 </InputGroup>
@@ -370,18 +407,23 @@ const Messages = () => {
                           activeConversation === conversation.id ? 'bg-body-tertiary' : ''
                         }`}
                         style={{ cursor: 'pointer' }}
+                        onClick={() => handleConversationClick(conversation.id)}
                         role="button"
                         tabIndex={0}
-                        onClick={() => setActiveConversation(conversation.id)}
-                        onKeyPress={(e) => {
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
-                            setActiveConversation(conversation.id);
+                            handleConversationClick(conversation.id);
                           }
                         }}
                       >
                         <Image
-                          src={otherUser.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.email)}&background=random`}
-                          alt={`${otherUser.email} avatar`}
+                          src={
+              otherUser.image
+              || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                otherUser.email,
+              )}&background=random`
+            }
+                          alt={`${otherUser.email}'s avatar`}
                           width={45}
                           height={45}
                           roundedCircle
@@ -393,13 +435,13 @@ const Messages = () => {
                               otherUser.status === 'online' ? 'text-success' : 'text-secondary'
                             }`}
                           >
-                            <i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }} />
+                            <i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }} aria-hidden="true" />
                             {otherUser.status === 'online' ? 'online' : 'offline'}
                           </small>
                           {conversation.lastMessage && (
-                            <small className="text-muted d-block text-truncate" style={{ maxWidth: '150px' }}>
-                              {conversation.lastMessage}
-                            </small>
+                          <small className="text-muted d-block text-truncate" style={{ maxWidth: '150px' }}>
+                            {conversation.lastMessage}
+                          </small>
                           )}
                         </div>
                       </div>
@@ -413,43 +455,46 @@ const Messages = () => {
                 {activeConversation ? (
                   <>
                     {/* Chat Header */}
-                    {activeConversation && (
-                      <div className="d-flex justify-content-between align-items-center border-bottom p-3">
-                        <div className="d-flex align-items-center">
-                          {(() => {
-                            const conversation = conversations.find(c => c.id === activeConversation);
-                            if (!conversation) return null;
+                    <div className="d-flex justify-content-between align-items-center border-bottom p-3">
+                      <div className="d-flex align-items-center">
+                        {(() => {
+                          const conversation = conversations.find(c => c.id === activeConversation);
+                          if (!conversation) return null;
 
-                            const otherUser = getOtherParticipant(conversation);
-                            return (
-                              <>
-                                <Image
-                                  src={otherUser.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.email)}&background=random`}
-                                  alt={`${otherUser.email} avatar`}
-                                  width={40}
-                                  height={40}
-                                  roundedCircle
-                                />
-                                <div className="ms-2">
-                                  <h6 className="mb-0">{otherUser.displayName || otherUser.email}</h6>
-                                  <small>
-                                    {(() => {
-                                      if (otherUser.status === 'online') {
-                                        return 'Online now';
-                                      }
-                                      if (otherUser.lastActive) {
-                                        return `Last seen: ${otherUser.lastActive}`;
-                                      }
-                                      return 'Offline';
-                                    })()}
-                                  </small>
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </div>
+                          const otherUser = getOtherParticipant(conversation);
+                          return (
+                            <>
+                              <Image
+                                src={
+                                  otherUser.image
+                                  || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                    otherUser.email,
+                                  )}&background=random`
+                                }
+                                alt={`${otherUser.email}'s avatar`}
+                                width={40}
+                                height={40}
+                                roundedCircle
+                              />
+                              <div className="ms-2">
+                                <h6 className="mb-0">{otherUser.displayName || otherUser.email}</h6>
+                                <small>
+                                  {(() => {
+                                    if (otherUser.status === 'online') {
+                                      return 'Online now';
+                                    }
+                                    if (otherUser.lastActive) {
+                                      return `Last seen: ${otherUser.lastActive}`;
+                                    }
+                                    return 'Offline';
+                                  })()}
+                                </small>
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
-                    )}
+                    </div>
 
                     {/* Chat History */}
                     <div className="flex-grow-1 p-3 overflow-auto bg-white">
@@ -457,11 +502,13 @@ const Messages = () => {
                         {messages.map((message) => (
                           <li key={message.id} className={`mb-4 ${message.sender === currentUser ? 'text-end' : ''}`}>
                             <div className="text-muted small mb-1">{formatTime(message.createdAt)}</div>
-                            <div className="d-flex">
+                            <div className={`d-flex ${message.sender === currentUser ? 'justify-content-end' : ''}`}>
                               {message.sender !== currentUser && (
                                 <Image
-                                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender)}&background=random`}
-                                  alt={`${message.sender} avatar`}
+                                  src={`https://ui-avatars.com/api/?name=${
+                                    encodeURIComponent(message.sender)
+                                  }&background=random`}
+                                  alt={`${message.sender}'s avatar`}
                                   width={40}
                                   height={40}
                                   roundedCircle
@@ -471,7 +518,7 @@ const Messages = () => {
                               <div
                                 className={`${
                                   message.sender === currentUser
-                                    ? 'bg-success-subtle ms-auto'
+                                    ? 'bg-success-subtle'
                                     : 'bg-secondary-subtle'
                                 } d-inline-block p-3 rounded mt-2`}
                               >
@@ -479,7 +526,9 @@ const Messages = () => {
                               </div>
                               {message.sender === currentUser && (
                                 <Image
-                                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser)}&background=random`}
+                                  src={`https://ui-avatars.com/api/?name=${
+                                    encodeURIComponent(currentUser)
+                                  }&background=random`}
                                   alt="Your avatar"
                                   width={40}
                                   height={40}
@@ -501,9 +550,9 @@ const Messages = () => {
                           id="message-input"
                           placeholder="Type your message here..."
                           value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
+                          onChange={handleMessageChange}
                           onKeyPress={handleKeyPress}
-                          aria-label="Type your message"
+                          aria-label="Type a message"
                         />
                         <Button
                           variant="success"
@@ -511,8 +560,7 @@ const Messages = () => {
                           disabled={!newMessage.trim()}
                           aria-label="Send message"
                         >
-                          <i className="bi bi-send" />
-                          Send
+                          <i className="bi bi-send" aria-hidden="true" /> Send
                         </Button>
                       </InputGroup>
                     </div>
