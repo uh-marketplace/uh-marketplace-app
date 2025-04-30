@@ -11,9 +11,10 @@ export default async function Explore() {
   const session = await getServerSession(authOptions);
   const userEmail = session?.user?.email;
 
+  // Fetch all items from the database using Prisma
   const items = await prisma.item.findMany({
     orderBy: {
-      id: 'desc',
+      id: 'desc', // optional: newest items first
     },
   });
 
