@@ -5,11 +5,17 @@ import authOptions from '@/lib/authOptions';
 import { prisma } from '@/lib/prisma';
 import ExplorePageContent from '@/components/ExplorePage';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Explore() {
   const session = await getServerSession(authOptions);
   const userEmail = session?.user?.email;
 
-  const items = await prisma.item.findMany();
+  const items = await prisma.item.findMany({
+    orderBy: {
+      id: 'desc',
+    },
+  });
 
   let favoriteItemIds: number[] = [];
 
