@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import ItemCard from '@/components/ItemCard';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const items = await prisma.item.findMany();
 
