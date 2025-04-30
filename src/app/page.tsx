@@ -32,7 +32,7 @@ export default async function Home() {
           <Row className="justify-content-center mt-5 g-4 pb-5">
             {items.map((item) => (
               <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
-                <ItemCard item={item} />
+                <ItemCard item={item} initialFavorited={false} />
               </Col>
             ))}
           </Row>

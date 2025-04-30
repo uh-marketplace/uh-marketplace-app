@@ -1,89 +1,72 @@
 'use client';
 
-import { Container, Row, Col, Image, Card, Dropdown, ButtonGroup } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
+import ItemCard from '@/components/ItemCard';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
-const Favorites = () => (
-  <main className="bg-white min-vh-100">
-    <Container fluid className="py-5 text-center">
-      <Row className="justify-content-center">
-        <Col md={8}>
-          <h1 className="fw-bold mb-3" style={{ color: '#00664B' }}>
-            Favorites
-          </h1>
-          <p className="mb-4">
-            Revisit listings you liked in your Heart List
-          </p>
-        </Col>
-      </Row>
-      <Dropdown as={ButtonGroup}>
-        <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-          Sort by:
-        </Dropdown.Toggle>
+export default function FavoritesPage() {
+  const { data: session, status } = useSession();
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-        <Dropdown.Menu>
-          <Dropdown.Item href="#">Price, high</Dropdown.Item>
-          <Dropdown.Item href="#">Price, low</Dropdown.Item>
-          <Dropdown.Item href="#">Date added</Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-      <Row className="justify-content-center mt-5">
-        <Col xs={12} md={3} className="mb-3">
-          <Card className="shadow-sm">
-            <Card.Img variant="top" src="/jeans.png" alt="Item Preview" />
-            <Card.Body className="text-start">
-              <Card.Title className="fw-bold mb-1">Baggy Jeans</Card.Title>
-              <Card.Text className="text-muted mb-0">
-                $30 · Near Campus Center
-                <Image
-                  src="/suit-heart-fill.svg"
-                  alt="heart"
-                  width="25"
-                  height="25"
-                  className="ms-5"
-                />
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={12} md={3} className="mb-3">
-          <Card className="shadow-sm">
-            <Card.Img variant="top" src="/desk.png" alt="Item Preview" />
-            <Card.Body className="text-start">
-              <Card.Title className="fw-bold mb-1">Desk</Card.Title>
-              <Card.Text className="text-muted mb-0">
-                $45 · Hale Aloha
-                <Image
-                  src="/suit-heart-fill.svg"
-                  alt="heart"
-                  width="25"
-                  height="25"
-                  className="ms-5"
-                />
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={12} md={3} className="mb-3">
-          <Card className="shadow-sm">
-            <Card.Img variant="top" src="/textbooks.png" alt="Item Preview" />
-            <Card.Body className="text-start">
-              <Card.Title className="fw-bold mb-1">Textbooks</Card.Title>
-              <Card.Text className="text-muted mb-0">
-                $10 · Free pickup
-                <Image
-                  src="/suit-heart-fill.svg"
-                  alt="heart"
-                  width="25"
-                  height="25"
-                  className="ms-5"
-                />
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
-  </main>
-);
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!session?.user) return;
 
-export default Favorites;
+      const res = await fetch('/api/favorites');
+      const data = await res.json();
+      setFavorites(data);
+      setLoading(false);
+    };
+
+    fetchFavorites();
+  }, [session]);
+
+  const removeFromFavorites = async (itemId: number) => {
+    await fetch('/api/favorite', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId }),
+    });
+
+    setFavorites((prev) => prev.filter((fav) => fav.item.id !== itemId));
+  };
+
+  if (status === 'loading' || loading) return <p className="text-center">Loading...</p>;
+
+  if (status === 'unauthenticated') {
+    return (
+      <main className="text-center py-10">
+        <h2>You must be logged in to view favorites.</h2>
+        <Link href="/auth/signin" className="btn btn-primary mt-3">Sign in</Link>
+      </main>
+    );
+  }
+
+  return (
+    <main className="bg-white min-vh-100">
+      <div className="text-center py-4">
+        <h1 className="fw-bold mb-2" style={{ color: '#00664B' }}>Favorites</h1>
+        <p>Revisit listings you liked in your Heart List</p>
+      </div>
+      <div className="container">
+        <div className="row g-4">
+          {favorites.length === 0 ? (
+            <p className="text-center">You have no favorites yet.</p>
+          ) : (
+            favorites.map((fav) => (
+              <div key={fav.item.id} className="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                <ItemCard
+                  item={fav.item}
+                  initialFavorited
+                  onUnfavorite={() => removeFromFavorites(fav.item.id)}
+                />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}

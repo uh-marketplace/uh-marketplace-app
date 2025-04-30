@@ -1,20 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Heart, HeartFill } from 'react-bootstrap-icons';
 
-const ItemCard = ({ item }: { item: any }) => {
-  const [isFavorited, setIsFavorited] = useState(false);
+type ItemCardProps = {
+  item: any;
+  initialFavorited: boolean;
+  onUnfavorite?: () => void;
+};
 
-  const toggleFavorite = () => setIsFavorited(!isFavorited);
+const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProps) => {
+  const [isFavorited, setIsFavorited] = useState(initialFavorited);
+
+  useEffect(() => {
+    setIsFavorited(initialFavorited);
+  }, [initialFavorited]);
+
+  const toggleFavorite = async () => {
+    const newState = !isFavorited;
+    setIsFavorited(newState);
+
+    try {
+      await fetch('/api/favorite', {
+        method: newState ? 'POST' : 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: item.id }),
+      });
+
+      if (!newState && onUnfavorite) {
+        onUnfavorite();
+      }
+    } catch (err) {
+      console.error('Favorite update failed:', err);
+      setIsFavorited(!newState);
+    }
+  };
 
   return (
     <div
       className="position-relative border rounded-lg overflow-hidden shadow-sm
-                 hover:shadow-md transition p-2 bg-white"
+      hover:shadow-md transition p-2 bg-white"
     >
-      {/* Favorite Icon */}
       <button
         type="button"
         onClick={toggleFavorite}
@@ -28,16 +55,14 @@ const ItemCard = ({ item }: { item: any }) => {
         )}
       </button>
 
-      {/* Item Image */}
       <Image
         src={item.imageUrl}
-        alt={item.title}
+        alt={item.name}
         width={300}
         height={200}
         className="w-100 h-auto object-cover"
       />
 
-      {/* Item Content */}
       <div className="p-2">
         <h2 className="fs-6 fw-normal mb-1">{item.name}</h2>
         <p className="fw-bold mb-1">{item.price}</p>
@@ -46,6 +71,10 @@ const ItemCard = ({ item }: { item: any }) => {
       </div>
     </div>
   );
+};
+
+ItemCard.defaultProps = {
+  onUnfavorite: () => {},
 };
 
 export default ItemCard;
