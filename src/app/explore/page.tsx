@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-/* eslint-disable import/prefer-default-export */
-
->>>>>>> b3cf3b2e2200577b598dca45cb6c3ccf09dd7837
 import { prisma } from '@/lib/prisma';
 import ExplorePageContent from '@/components/ExplorePage';
 
