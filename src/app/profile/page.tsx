@@ -135,11 +135,12 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="text-center">
-              <Button variant="success" 
-              onClick={() => {
+              <Button 
+              variant="success"
+                onClick={() => {
                 setNewBio(bio || '');
                 setIsEditing(true);
-              }}>
+                }}>
                 Edit Bio
               </Button>
             </div>
@@ -175,10 +176,12 @@ export default function ProfilePage() {
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
                 <p className="text-gray-600 text-center">{item.price.toFixed(2)}</p>
                 <p className="text-gray-600 text-center">
-                  Location: {item.location}
+                  Location:
+                  {item.location}
                 </p>
                 <p className="text-gray-600 text-center">
-                  Condition: {item.condition}
+                  Condition:
+                  {item.condition}
                 </p>
                 <p className="text-gray-600 text-center mt-2">
                   {item.description}
