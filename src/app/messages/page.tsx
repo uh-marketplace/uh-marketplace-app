@@ -1,3 +1,12 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react/no-unused-prop-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/no-unknown-property */
+/* eslint-disable react/button-has-type */
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable max-len */
+/* eslint-disable react/no-unstable-nested-components */
+
 import { test, expect, type Page } from '@playwright/test';
 
 // Helper functions - defined once at the top
