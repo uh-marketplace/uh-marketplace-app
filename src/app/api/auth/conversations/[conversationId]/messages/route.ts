@@ -23,9 +23,16 @@ export async function GET(request: Request) {
       where: {
         id: parseInt(conversationId, 10),
       },
+      include: {
+        participants: true,
+      },
     });
 
-    if (!conversation || !conversation.participants.includes(session.user.email)) {
+    if (
+      !conversation || !session.user || !conversation.participants.some(
+        participant => participant.email === session.user?.email,
+      )
+    ) {
       return NextResponse.json({ error: 'Unauthorized access to this conversation' }, { status: 403 });
     }
 
@@ -66,9 +73,14 @@ export async function POST(request: Request) {
       where: {
         id: conversationId,
       },
+      include: {
+        participants: true,
+      },
     });
 
-    if (!conversation || !conversation.participants.includes(session.user.email)) {
+    if (!conversation || !session.user?.email || !conversation.participants.some(
+      participant => participant.email === session.user?.email,
+    )) {
       return NextResponse.json({ error: 'Unauthorized access to this conversation' }, { status: 403 });
     }
 
@@ -76,8 +88,23 @@ export async function POST(request: Request) {
     const newMessage = await prisma.message.create({
       data: {
         content,
-        sender: session.user.email,
-        conversationId,
+        sender: {
+          connect: {
+            email: session.user.email,
+          },
+        },
+        receiver: {
+          connect: {
+            email: conversation.participants.find(
+              participant => participant.email !== session.user?.email,
+            )?.email || '',
+          },
+        },
+        conversation: {
+          connect: {
+            id: conversationId,
+          },
+        },
       },
     });
 

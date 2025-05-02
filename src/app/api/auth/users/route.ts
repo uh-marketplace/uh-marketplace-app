@@ -1,21 +1,28 @@
-import { NextResponse } from 'next/server';
 // eslint-disable-next-line import/extensions
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-export default async function GET() {
+const prisma = new PrismaClient();
+
+// GET: Fetch all users
+export async function GET() {
   try {
-    // For security, we don't want to expose password hashes
     const users = await prisma.user.findMany({
       select: {
         id: true,
         email: true,
         role: true,
-        createdAt: true,
-        updatedAt: true,
       },
     });
 
-    return NextResponse.json(users);
+    // Add a simple status field for demonstration purposes
+    const usersWithStatus = users.map(user => ({
+      ...user,
+      status: Math.random() > 0.5 ? 'online' : 'offline',
+      lastActive: new Date().toISOString(),
+    }));
+
+    return NextResponse.json(usersWithStatus);
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });

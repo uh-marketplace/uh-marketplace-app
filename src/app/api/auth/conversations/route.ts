@@ -17,10 +17,11 @@ export async function GET() {
     const conversations = await prisma.conversation.findMany({
       where: {
         participants: {
-          has: userEmail,
+          some: { email: userEmail },
         },
       },
       include: {
+        participants: true, // Include participants in the query
         messages: {
           orderBy: {
             createdAt: 'desc',
@@ -34,17 +35,6 @@ export async function GET() {
     });
 
     // Format the response with the last message
-    interface Conversation {
-      id: string;
-      participants: string[];
-      messages: Message[];
-      updatedAt: Date;
-    }
-
-    interface Message {
-      content: string;
-      createdAt: Date;
-    }
 
     interface FormattedConversation {
       id: string;
@@ -54,9 +44,9 @@ export async function GET() {
       updatedAt: Date;
     }
 
-    const formattedConversations: FormattedConversation[] = conversations.map((conversation: Conversation) => ({
-      id: conversation.id,
-      participants: conversation.participants,
+    const formattedConversations: FormattedConversation[] = conversations.map((conversation) => ({
+      id: conversation.id.toString(),
+      participants: conversation.participants.map((participant) => participant.email),
       lastMessage: conversation.messages[0]?.content || '',
       lastMessageTime: conversation.messages[0]?.createdAt.toISOString() || '',
       updatedAt: conversation.updatedAt,
@@ -89,14 +79,11 @@ export async function POST(request: Request) {
       where: {
         AND: participants.map(email => ({
           participants: {
-            has: email,
+            some: {
+              email,
+            },
           },
         })),
-        participants: {
-          every: {
-            in: participants,
-          },
-        },
       },
     });
 
@@ -107,7 +94,9 @@ export async function POST(request: Request) {
     // Create a new conversation
     const newConversation = await prisma.conversation.create({
       data: {
-        participants,
+        participants: {
+          connect: participants.map((email: string) => ({ email })),
+        },
       },
     });
 
