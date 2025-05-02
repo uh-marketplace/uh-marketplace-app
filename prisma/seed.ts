@@ -20,35 +20,38 @@ async function main() {
   const password = await hash('changeme', 10);
 
   // ✅ Use for...of to handle async properly
-  for (const account of config.defaultAccounts) {
-    const role = (account.role as Role) || Role.USER;
-    console.log(`  Creating user: ${account.email} with role: ${role}`);
-    await prisma.user.upsert({
-      where: { email: account.email },
-      update: {},
-      create: {
-        email: account.email,
-        password,
-        role,
-      },
-    });
-  }
+  await Promise.all(
+    config.defaultAccounts.map(async (account) => {
+      const role = (account.role as Role) || Role.USER;
+      console.log(`  Creating user: ${account.email} with role: ${role}`);
+      await prisma.user.upsert({
+        where: { email: account.email },
+        update: {},
+        create: {
+          email: account.email,
+          password,
+          role,
+        },
+      });
+    }),
+  );
 
-  for (const data of config.defaultData) {
-    const condition = (data.condition as Condition) || Condition.good;
-    console.log(`  Adding stuff: ${JSON.stringify(data)}`);
-    await prisma.stuff.upsert({
-      where: { id: config.defaultData.indexOf(data) + 1 },
-      update: {},
-      create: {
-        name: data.name,
-        quantity: data.quantity,
-        owner: data.owner,
-        condition,
-      },
-    });
-  }
-
+  await Promise.all(
+    config.defaultData.map(async (data, index) => {
+      const condition = (data.condition as Condition) || Condition.good;
+      console.log(`  Adding stuff: ${JSON.stringify(data)}`);
+      await prisma.stuff.upsert({
+        where: { id: index + 1 },
+        update: {},
+        create: {
+          name: data.name,
+          quantity: data.quantity,
+          owner: data.owner,
+          condition,
+        },
+      });
+    }),
+  );
 
   // Create users
   const users = await Promise.all(
@@ -98,7 +101,7 @@ async function main() {
     // Create a conversation between the first two users
     const conversation1 = await prisma.conversation.create({
       data: {
-        name: 'General Chat',
+        // name: 'General Chat', // Removed as it is not a valid property in your schema
         participants: {
           connect: [
             { id: users[0].id },
@@ -139,7 +142,7 @@ async function main() {
     if (users.length >= 3) {
       const conversation2 = await prisma.conversation.create({
         data: {
-          name: 'Project Discussion',
+          // name: 'Project Discussion', // Removed as it is not a valid property in your schema
           participants: {
             connect: [
               { id: users[0].id },
@@ -176,25 +179,27 @@ async function main() {
         ],
       });
     }
-
-  for (const data of config.defaultItems) {
-    const condition = (data.condition as Condition) || Condition.good;
-    console.log(`  Adding item: ${JSON.stringify(data)}`);
-    await prisma.item.upsert({
-      where: { id: config.defaultItems.indexOf(data) + 1 },
-      update: {},
-      create: {
-        name: data.name,
-        condition,
-        price: data.price,
-        location: data.location,
-        owner: data.owner,
-        imageUrl: data.imageUrl,
-        description: data.description,
-      },
-    });
-
   }
+
+  await Promise.all(
+    config.defaultItems.map(async (data, index) => {
+      const condition = (data.condition as Condition) || Condition.good;
+      console.log(`  Adding item: ${JSON.stringify(data)}`);
+      await prisma.item.upsert({
+        where: { id: index + 1 },
+        update: {},
+        create: {
+          name: data.name,
+          condition,
+          price: data.price,
+          location: data.location,
+          owner: data.owner,
+          imageUrl: data.imageUrl,
+          description: data.description,
+        },
+      });
+    }),
+  );
 }
 
 main()
