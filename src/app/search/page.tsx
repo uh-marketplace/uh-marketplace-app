@@ -20,8 +20,9 @@ export default async function SearchPage({ searchParams }: { searchParams: { que
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">
-        Search Results for
+        Search Results for "
         {query}
+        "
       </h1>
       {items.length === 0 ? (
         <p>No items found.</p>
