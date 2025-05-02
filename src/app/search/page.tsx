@@ -30,7 +30,7 @@ export default async function SearchPage({ searchParams }: { searchParams: { que
         <div className="row g-4">
           {items.map((item) => (
             <div key={item.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
-              <ItemCard item={item} />
+              <ItemCard item={item} initialFavorited={false} />
             </div>
           ))}
         </div>
