@@ -140,10 +140,10 @@ export default function ProfilePage() {
                 onClick={() => {
                   setNewBio(bio || '');
                   setIsEditing(true);
-                }
-                }>
-                Edit Bio
-              </Button>
+                }}
+                >
+                  Edit Bio
+                </Button>
             </div>
           )}
         </div>
