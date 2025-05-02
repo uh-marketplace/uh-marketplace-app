@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+// eslint-disable-next-line import/extensions
 import { prisma } from '@/lib/prisma';
+// eslint-disable-next-line import/extensions
 import authOptions from '@/lib/authOptions';
 
 export async function GET(request: Request) {
@@ -30,7 +32,7 @@ export async function GET(request: Request) {
 
     if (
       !conversation || !session.user || !conversation.participants.some(
-        participant => participant.email === session.user?.email,
+        (participant: { email: string }) => participant.email === session.user?.email,
       )
     ) {
       return NextResponse.json({ error: 'Unauthorized access to this conversation' }, { status: 403 });
@@ -78,34 +80,59 @@ export async function POST(request: Request) {
       },
     });
 
+    interface Participant {
+      email: string;
+    }
+
     if (!conversation || !session.user?.email || !conversation.participants.some(
-      participant => participant.email === session.user?.email,
+      (participant: Participant) => participant.email === session.user?.email,
     )) {
       return NextResponse.json({ error: 'Unauthorized access to this conversation' }, { status: 403 });
     }
 
     // Create the message
-    const newMessage = await prisma.message.create({
-      data: {
-        content,
-        sender: {
-          connect: {
-            email: session.user.email,
-          },
-        },
-        receiver: {
-          connect: {
-            email: conversation.participants.find(
-              participant => participant.email !== session.user?.email,
-            )?.email || '',
-          },
-        },
-        conversation: {
-          connect: {
-            id: conversationId,
-          },
+    interface NewMessageData {
+      content: string;
+      sender: {
+        connect: {
+          email: string;
+        };
+      };
+      receiver: {
+        connect: {
+          email: string;
+        };
+      };
+      conversation: {
+        connect: {
+          id: number;
+        };
+      };
+    }
+
+    const newMessageData: NewMessageData = {
+      content,
+      sender: {
+        connect: {
+          email: session.user.email,
         },
       },
+      receiver: {
+        connect: {
+          email: conversation.participants.find(
+            (participant: Participant) => participant.email !== session.user?.email,
+          )?.email || '',
+        },
+      },
+      conversation: {
+        connect: {
+          id: conversationId,
+        },
+      },
+    };
+
+    const newMessage = await prisma.message.create({
+      data: newMessageData,
     });
 
     // Update the conversation's updatedAt timestamp

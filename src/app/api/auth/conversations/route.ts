@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+// eslint-disable-next-line import/extensions
 import { prisma } from '@/lib/prisma';
+// eslint-disable-next-line import/extensions
 import authOptions from '@/lib/authOptions';
 
 export async function GET() {
@@ -44,9 +46,25 @@ export async function GET() {
       updatedAt: Date;
     }
 
-    const formattedConversations: FormattedConversation[] = conversations.map((conversation) => ({
+    interface Participant {
+      email: string;
+    }
+
+    interface Message {
+      content: string;
+      createdAt: Date;
+    }
+
+    interface Conversation {
+      id: string;
+      participants: Participant[];
+      messages: Message[];
+      updatedAt: Date;
+    }
+
+    const formattedConversations: FormattedConversation[] = conversations.map((conversation: Conversation) => ({
       id: conversation.id.toString(),
-      participants: conversation.participants.map((participant) => participant.email),
+      participants: conversation.participants.map((participant: Participant) => participant.email),
       lastMessage: conversation.messages[0]?.content || '',
       lastMessageTime: conversation.messages[0]?.createdAt.toISOString() || '',
       updatedAt: conversation.updatedAt,

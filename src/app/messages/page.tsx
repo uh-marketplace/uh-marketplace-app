@@ -1,344 +1,461 @@
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-unused-prop-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react/no-unknown-property */
-/* eslint-disable react/button-has-type */
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable max-len */
 /* eslint-disable react/no-unstable-nested-components */
 
-import { test, expect, type Page } from '@playwright/test';
+'use client';
 
-// Helper functions - defined once at the top
-async function checkNumberOfTodosInLocalStorage(page: Page, expected: number) {
-  return page.waitForFunction((e: number) => JSON.parse(localStorage['react-todos']).length === e, expected);
+import { Container, Row, Col, Card, Form, InputGroup, Button, Image } from 'react-bootstrap';
+import { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+// Define types for our data
+interface User {
+  id: number;
+  email: string;
+  displayName?: string;
+  image?: string;
+  status?: 'online' | 'offline';
+  lastActive?: string;
 }
 
-async function checkNumberOfCompletedTodosInLocalStorage(page: Page, expected: number) {
-  return page.waitForFunction(
-    e => JSON.parse(localStorage['react-todos'])
-      .filter((todo: any) => todo.completed).length === e,
-    expected,
-  );
+interface Message {
+  id: number;
+  content: string;
+  sender: {
+    id: number;
+    email: string;
+  };
+  createdAt: string;
 }
 
-async function checkTodosInLocalStorage(page: Page, title: string) {
-  return page.waitForFunction(t => JSON.parse(localStorage[
-    'react-todos']).some((todo: any) => todo.title === t), title);
+interface Conversation {
+  id: string;
+  participants: string[];
+  lastMessage?: string;
+  lastMessageTime?: string;
+  updatedAt: Date;
 }
 
-const TODO_ITEMS = [
-  'buy some cheese',
-  'feed the cat',
-  'book a doctors appointment',
-] as const;
+const MessagesPage = () => {
+  const { data: session, status } = useSession();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [activeConversation, setActiveConversation] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-async function createDefaultTodos(page: Page) {
-  const newTodo = page.getByPlaceholder('What needs to be done?');
+  const currentUser = session?.user?.email || '';
 
-  await Promise.all(
-    TODO_ITEMS.map(async (item) => {
-      await newTodo.fill(item);
-      await newTodo.press('Enter');
-    }),
-  );
-}
+  // Fetch conversations and users when component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      if (status !== 'authenticated') return;
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('https://demo.playwright.dev/todomvc');
-});
+      try {
+        // Fetch conversations
+        const res = await fetch('/api/conversations');
+        const data = await res.json();
+        setConversations(data);
 
-test.describe('New Todo', () => {
-  test('should allow me to add todo items', async ({ page }) => {
-    // create a new todo locator
-    const newTodo = page.getByPlaceholder('What needs to be done?');
+        // Fetch users for the sidebar
+        const usersRes = await fetch('/api/users');
+        const usersData = await res.json();
+        setUsers(usersData);
 
-    // Create 1st todo.
-    await newTodo.fill(TODO_ITEMS[0]);
-    await newTodo.press('Enter');
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
+    };
 
-    // Make sure the list only has one todo item.
-    await expect(page.getByTestId('todo-title')).toHaveText([
-      TODO_ITEMS[0],
-    ]);
+    fetchData();
+  }, [status]);
 
-    // Create 2nd todo.
-    await newTodo.fill(TODO_ITEMS[1]);
-    await newTodo.press('Enter');
+  // Fetch messages when active conversation changes
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!activeConversation) return;
 
-    // Make sure the list now has two todo items.
-    await expect(page.getByTestId('todo-title')).toHaveText([
-      TODO_ITEMS[0],
-      TODO_ITEMS[1],
-    ]);
+      try {
+        const res = await fetch(`/api/messages?conversationId=${activeConversation}`);
+        const data = await res.json();
+        setMessages(data);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
 
-    await checkNumberOfTodosInLocalStorage(page, 2);
-  });
+    fetchMessages();
+  }, [activeConversation]);
 
-  test('should clear text input field when an item is added', async ({ page }) => {
-    // create a new todo locator
-    const newTodo = page.getByPlaceholder('What needs to be done?');
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-    // Create one todo item.
-    await newTodo.fill(TODO_ITEMS[0]);
-    await newTodo.press('Enter');
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !activeConversation) return;
+    try {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: newMessage,
+          conversationId: activeConversation,
+        }),
+      });
 
-    // Check that input is empty.
-    await expect(newTodo).toBeEmpty();
-    await checkNumberOfTodosInLocalStorage(page, 1);
-  });
+      if (response.ok) {
+        const newMessageObj = await response.json();
+        setMessages([...messages, newMessageObj]);
+        setNewMessage('');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
 
-  test('should append new items to the bottom of the list', async ({ page }) => {
-    // Create 3 items.
-    await createDefaultTodos(page);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
-    // create a todo count locator
-    const todoCount = page.getByTestId('todo-count');
+  // Find other participant in conversation
+  const getOtherParticipant = (conversation: Conversation) => {
+    const otherUserEmail = conversation.participants.find(p => p !== currentUser) || '';
+    const user = users.find(u => u.email === otherUserEmail);
+    return user || { email: otherUserEmail, status: 'offline' as const };
+  };
 
-    // Check test using different methods.
-    await expect(page.getByText('3 items left')).toBeVisible();
-    await expect(todoCount).toHaveText('3 items left');
-    await expect(todoCount).toContainText('3');
-    await expect(todoCount).toHaveText(/3/);
+  // Format timestamp
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
-    // Check all items in one call.
-    await expect(page.getByTestId('todo-title')).toHaveText(TODO_ITEMS);
-    await checkNumberOfTodosInLocalStorage(page, 3);
-  });
-});
+  if (status === 'loading' || loading) {
+    return <LoadingSpinner />;
+  }
 
-test.describe('Mark all as completed', () => {
-  test.beforeEach(async ({ page }) => {
-    await createDefaultTodos(page);
-    await checkNumberOfTodosInLocalStorage(page, 3);
-  });
+  if (status === 'unauthenticated') {
+    return redirect('/auth/signin');
+  }
 
-  test.afterEach(async ({ page }) => {
-    await checkNumberOfTodosInLocalStorage(page, 3);
-  });
+  // Sample data for empty state
+  const sampleUsers = [
+    {
+      name: 'Vincent Porter',
+      status: 'offline',
+      statusClass: 'text-danger',
+      img: 'https://bootdey.com/img/Content/avatar/avatar1.png',
+    },
+    {
+      name: 'Aiden Chavez',
+      status: 'online',
+      statusClass: 'text-success',
+      img: 'https://bootdey.com/img/Content/avatar/avatar2.png',
+      active: true,
+    },
+  ];
+  
+  // Fallback to sample UI if no real data
+  if (conversations.length === 0) {
+    return (
+      <main className="bg-light py-5 min-vh-100">
+        <Container fluid>
+          <Row className="justify-content-center">
+            <Col lg={10}>
+              <Card className="d-flex flex-row overflow-hidden">
+                {/* People List */}
+                <div className="p-3 border-end" style={{ width: 280, minHeight: '600px' }}>
+                  <InputGroup className="mb-3">
+                    <InputGroup.Text>
+                      <i className="bi bi-search" aria-hidden="true" />
+                    </InputGroup.Text>
+                    <Form.Control 
+                      id="mock-search-input"
+                      placeholder="Search..." 
+                      aria-label="Search contacts"
+                    />
+                  </InputGroup>
+                  <ul className="list-unstyled mb-0">
+                    {sampleUsers.map((user) => (
+                      <li
+                        key={user.name}
+                        className={`d-flex align-items-start gap-2 p-2 rounded ${user.active ? 'bg-body-tertiary' : ''}`}
+                        style={{ cursor: 'pointer' }}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            // Handle activation
+                          }
+                        }}
+                      >
+                        <Image
+                          src={user.img}
+                          alt={`${user.name}'s avatar`}
+                          width={45}
+                          height={45}
+                          roundedCircle
+                        />
+                        <div className="flex-grow-1">
+                          <div className="fw-semibold">{user.name}</div>
+                          <small className={`d-flex align-items-center ${user.statusClass}`}>
+                            <i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }} aria-hidden="true" />
+                            {user.status}
+                          </small>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-  test('should allow me to mark all items as completed', async ({ page }) => {
-    // Complete all todos.
-    await page.getByLabel('Mark all as complete').check();
+                {/* Chat Section */}
+                <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: '600px' }}>
+                  {/* Chat Header */}
+                  <div className="d-flex justify-content-between align-items-center border-bottom p-3">
+                    <div className="d-flex align-items-center">
+                      <Image
+                        src="https://bootdey.com/img/Content/avatar/avatar2.png"
+                        alt="Aiden Chavez's avatar"
+                        width={40}
+                        height={40}
+                        roundedCircle
+                      />
+                      <div className="ms-2">
+                        <h6 className="mb-0">Aiden Chavez</h6>
+                        <small>Last seen: 2 hours ago</small>
+                      </div>
+                    </div>
+                  </div>
 
-    // Ensure all todos have 'completed' class.
-    await expect(page.getByTestId('todo-item')).toHaveClass(['completed', 'completed', 'completed']);
-    await checkNumberOfCompletedTodosInLocalStorage(page, 3);
-  });
-
-  test('should allow me to clear the complete state of all items', async ({ page }) => {
-    const toggleAll = page.getByLabel('Mark all as complete');
-    // Check and then immediately uncheck.
-    await toggleAll.check();
-    await toggleAll.uncheck();
-
-    // Should be no completed classes.
-    await expect(page.getByTestId('todo-item')).toHaveClass(['', '', '']);
-  });
-
-  test('complete all checkbox should update state when items are completed / cleared', async ({ page }) => {
-    const toggleAll = page.getByLabel('Mark all as complete');
-    await toggleAll.check();
-    await expect(toggleAll).toBeChecked();
-    await checkNumberOfCompletedTodosInLocalStorage(page, 3);
-
-    // Uncheck first todo.
-    const firstTodo = page.getByTestId('todo-item').nth(0);
-    await firstTodo.getByRole('checkbox').uncheck();
-
-    // Reuse toggleAll locator and make sure its not checked.
-    await expect(toggleAll).not.toBeChecked();
-
-    await firstTodo.getByRole('checkbox').check();
-    await checkNumberOfCompletedTodosInLocalStorage(page, 3);
-
-    // Assert the toggle all is checked again.
-    await expect(toggleAll).toBeChecked();
-  });
-});
-
-test.describe('Item', () => {
-  test('should allow me to mark items as complete', async ({ page }) => {
-    // create a new todo locator
-    const newTodo = page.getByPlaceholder('What needs to be done?');
-
-    // Create two items.
-    await Promise.all(
-      TODO_ITEMS.slice(0, 2).map(async (item) => {
-        await newTodo.fill(item);
-        await newTodo.press('Enter');
-      }),
+                  {/* Empty State */}
+                  <div className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4">
+                    <Image
+                      src="/images/logo.png"
+                      alt="Logo"
+                      width={100}
+                      height={100}
+                      className="mb-4 opacity-50"
+                    />
+                    <h4>No conversations yet</h4>
+                    <p className="text-muted">
+                      Start a new conversation from the Explore page
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </main>
     );
+  }
 
-    // Check first item.
-    const firstTodo = page.getByTestId('todo-item').nth(0);
-    await firstTodo.getByRole('checkbox').check();
-    await expect(firstTodo).toHaveClass('completed');
+  return (
+    <main className="bg-light py-5 min-vh-100">
+      <Container fluid>
+        <Row className="justify-content-center">
+          <Col lg={10}>
+            <Card className="d-flex flex-row overflow-hidden">
+              {/* People List */}
+              <div className="p-3 border-end" style={{ width: 280, minHeight: '600px' }}>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text>
+                    <i className="bi bi-search" aria-hidden="true" />
+                  </InputGroup.Text>
+                  <Form.Control
+                    id="search-conversations-input"
+                    placeholder="Search conversations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label="Search conversations"
+                  />
+                </InputGroup>
+                <ul className="list-unstyled mb-0 conversation-list">
+                  {conversations.map((conversation) => {
+                    const otherUser = getOtherParticipant(conversation);
+                    return (
+                      <li
+                        key={conversation.id}
+                        className={`d-flex align-items-start gap-2 p-2 rounded ${
+                          activeConversation === conversation.id ? 'bg-body-tertiary' : ''
+                        }`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setActiveConversation(conversation.id)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setActiveConversation(conversation.id);
+                          }
+                        }}
+                      >
+                        <Image
+                          src={'image' in otherUser && otherUser.image ? otherUser.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.email)}&background=random`}
+                          alt={`${otherUser.email}'s avatar`}
+                          width={45}
+                          height={45}
+                          roundedCircle
+                        />
+                        <div className="flex-grow-1">
+                          <div className="fw-semibold">{'displayName' in otherUser ? otherUser.displayName : otherUser.email}</div>
+                          <small
+                            className={`d-flex align-items-center ${
+                              otherUser.status === 'online' ? 'text-success' : 'text-secondary'
+                            }`}
+                          >
+                            <i className="bi bi-circle-fill me-1" style={{ fontSize: 8 }} aria-hidden="true" />
+                            {otherUser.status === 'online' ? 'online' : 'offline'}
+                          </small>
+                          {conversation.lastMessage && (
+                            <small className="text-muted d-block text-truncate" style={{ maxWidth: '150px' }}>
+                              {conversation.lastMessage}
+                            </small>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
 
-    // Check second item.
-    const secondTodo = page.getByTestId('todo-item').nth(1);
-    await expect(secondTodo).not.toHaveClass('completed');
-    await secondTodo.getByRole('checkbox').check();
+              {/* Chat Section */}
+              <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: '600px' }}>
+                {activeConversation ? (
+                  <>
+                    {/* Chat Header */}
+                    <div className="d-flex justify-content-between align-items-center border-bottom p-3">
+                      <div className="d-flex align-items-center">
+                        {(() => {
+                          const conversation = conversations.find(c => c.id === activeConversation);
+                          if (!conversation) return null;
 
-    // Assert completed class.
-    await expect(firstTodo).toHaveClass('completed');
-    await expect(secondTodo).toHaveClass('completed');
-  });
+                          const otherUser = getOtherParticipant(conversation);
+                          return (
+                            <>
+                              <Image
+                                src={'image' in otherUser && otherUser.image ? otherUser.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.email)}&background=random`}
+                                alt={`${otherUser.email}'s avatar`}
+                                width={40}
+                                height={40}
+                                roundedCircle
+                              />
+                              <div className="ms-2">
+                                <h6 className="mb-0">{'displayName' in otherUser ? otherUser.displayName : otherUser.email}</h6>
+                                <small>
+                                  {otherUser.status === 'online'
+                                    ? 'Online now'
+                                    : 'lastActive' in otherUser && otherUser.lastActive
+                                      ? `Last seen: ${otherUser.lastActive}`
+                                      : 'Offline'}
+                                </small>
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
 
-  test('should allow me to un-mark items as complete', async ({ page }) => {
-    // create a new todo locator
-    const newTodo = page.getByPlaceholder('What needs to be done?');
+                    {/* Chat History */}
+                    <div className="flex-grow-1 p-3 overflow-auto bg-white">
+                      <ul className="list-unstyled mb-0">
+                        {messages.map((message) => (
+                          <li key={message.id} className={`mb-4 ${message.sender.email === currentUser ? 'text-end' : ''}`}>
+                            <div className="text-muted small mb-1">{formatTime(message.createdAt)}</div>
+                            <div className={`d-flex ${message.sender.email === currentUser ? 'justify-content-end' : ''}`}>
+                              {message.sender.email !== currentUser && (
+                                <Image
+                                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender.email)}&background=random`}
+                                  alt={`${message.sender.email}'s avatar`}
+                                  width={40}
+                                  height={40}
+                                  roundedCircle
+                                  className="me-2 align-self-end"
+                                />
+                              )}
+                              <div
+                                className={`${
+                                  message.sender.email === currentUser
+                                    ? 'bg-success-subtle'
+                                    : 'bg-secondary-subtle'
+                                } d-inline-block p-3 rounded mt-2`}
+                              >
+                                {message.content}
+                              </div>
+                              {message.sender.email === currentUser && (
+                                <Image
+                                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser)}&background=random`}
+                                  alt="Your avatar"
+                                  width={40}
+                                  height={40}
+                                  roundedCircle
+                                  className="ms-2 align-self-end"
+                                />
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                        <div ref={messagesEndRef} />
+                      </ul>
+                    </div>
 
-    // Create two items.
-    await Promise.all(
-      TODO_ITEMS.slice(0, 2).map(async (item) => {
-        await newTodo.fill(item);
-        await newTodo.press('Enter');
-      }),
-    );
+                    {/* Chat Input */}
+                    <div className="border-top p-3">
+                      <InputGroup>
+                        <Form.Control
+                          id="message-input"
+                          placeholder="Type your message here..."
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          aria-label="Type a message"
+                        />
+                        <Button
+                          variant="success"
+                          onClick={handleSendMessage}
+                          disabled={!newMessage.trim()}
+                          aria-label="Send message"
+                        >
+                          <i className="bi bi-send" aria-hidden="true" /> Send
+                        </Button>
+                      </InputGroup>
+                    </div>
+                  </>
+                ) : (
+                  <div className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4">
+                    <Image
+                      src="/images/logo.png"
+                      alt="Logo"
+                      width={100}
+                      height={100}
+                      className="mb-4 opacity-50"
+                    />
+                    <h4>Select a conversation</h4>
+                    <p className="text-muted">
+                      Choose a conversation from the list to begin messaging
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </main>
+  );
+};
 
-    const firstTodo = page.getByTestId('todo-item').nth(0);
-    const secondTodo = page.getByTestId('todo-item').nth(1);
-    const firstTodoCheckbox = firstTodo.getByRole('checkbox');
-
-    await firstTodoCheckbox.check();
-    await expect(firstTodo).toHaveClass('completed');
-    await expect(secondTodo).not.toHaveClass('completed');
-    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
-
-    await firstTodoCheckbox.uncheck();
-    await expect(firstTodo).not.toHaveClass('completed');
-    await expect(secondTodo).not.toHaveClass('completed');
-    await checkNumberOfCompletedTodosInLocalStorage(page, 0);
-  });
-
-  test('should allow me to edit an item', async ({ page }) => {
-    await createDefaultTodos(page);
-
-    const todoItems = page.getByTestId('todo-item');
-    const secondTodo = todoItems.nth(1);
-    await secondTodo.dblclick();
-    await expect(secondTodo.getByRole('textbox', { name: 'Edit' })).toHaveValue(TODO_ITEMS[1]);
-    await secondTodo.getByRole('textbox', { name: 'Edit' }).fill('buy some sausages');
-    await secondTodo.getByRole('textbox', { name: 'Edit' }).press('Enter');
-
-    // Explicitly assert the new text value.
-    await expect(todoItems).toHaveText([
-      TODO_ITEMS[0],
-      'buy some sausages',
-      TODO_ITEMS[2],
-    ]);
-    await checkTodosInLocalStorage(page, 'buy some sausages');
-  });
-});
-
-test.describe('Editing', () => {
-  test.beforeEach(async ({ page }) => {
-    await createDefaultTodos(page);
-    await checkNumberOfTodosInLocalStorage(page, 3);
-  });
-
-  test('should hide other controls when editing', async ({ page }) => {
-    const todoItem = page.getByTestId('todo-item').nth(1);
-    await todoItem.dblclick();
-    await expect(todoItem.getByRole('checkbox')).not.toBeVisible();
-    await expect(todoItem.locator('label', {
-      hasText: TODO_ITEMS[1],
-    })).not.toBeVisible();
-    await checkNumberOfTodosInLocalStorage(page, 3);
-  });
-
-  test('should save edits on blur', async ({ page }) => {
-    const todoItems = page.getByTestId('todo-item');
-    await todoItems.nth(1).dblclick();
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('buy some sausages');
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).dispatchEvent('blur');
-
-    await expect(todoItems).toHaveText([
-      TODO_ITEMS[0],
-      'buy some sausages',
-      TODO_ITEMS[2],
-    ]);
-    await checkTodosInLocalStorage(page, 'buy some sausages');
-  });
-
-  test('should trim entered text', async ({ page }) => {
-    const todoItems = page.getByTestId('todo-item');
-    await todoItems.nth(1).dblclick();
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('    buy some sausages    ');
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).press('Enter');
-
-    await expect(todoItems).toHaveText([
-      TODO_ITEMS[0],
-      'buy some sausages',
-      TODO_ITEMS[2],
-    ]);
-    await checkTodosInLocalStorage(page, 'buy some sausages');
-  });
-
-  test('should remove the item if an empty text string was entered', async ({ page }) => {
-    const todoItems = page.getByTestId('todo-item');
-    await todoItems.nth(1).dblclick();
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('');
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).press('Enter');
-
-    await expect(todoItems).toHaveText([
-      TODO_ITEMS[0],
-      TODO_ITEMS[2],
-    ]);
-  });
-
-  test('should cancel edits on escape', async ({ page }) => {
-    const todoItems = page.getByTestId('todo-item');
-    await todoItems.nth(1).dblclick();
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).fill('buy some sausages');
-    await todoItems.nth(1).getByRole('textbox', { name: 'Edit' }).press('Escape');
-    await expect(todoItems).toHaveText(TODO_ITEMS);
-  });
-});
-
-test.describe('Counter', () => {
-  test('should display the current number of todo items', async ({ page }) => {
-    // create a new todo locator
-    const newTodo = page.getByPlaceholder('What needs to be done?');
-
-    // create a todo count locator
-    const todoCount = page.getByTestId('todo-count');
-
-    await newTodo.fill(TODO_ITEMS[0]);
-    await newTodo.press('Enter');
-
-    await expect(todoCount).toContainText('1');
-
-    await newTodo.fill(TODO_ITEMS[1]);
-    await newTodo.press('Enter');
-    await expect(todoCount).toContainText('2');
-
-    await checkNumberOfTodosInLocalStorage(page, 2);
-  });
-});
-
-test.describe('Clear completed button', () => {
-  test.beforeEach(async ({ page }) => {
-    await createDefaultTodos(page);
-  });
-
-  test('should display the correct text', async ({ page }) => {
-    await page.locator('.todo-list li .toggle').first().check();
-    await expect(page.getByRole('button', { name: 'Clear completed' })).toBeVisible();
-  });
-
-  test('should remove completed items when clicked', async ({ page }) => {
-    const todoItems = page.getByTestId('todo-item');
-    await todoItems.nth(1).getByRole('checkbox').check();
-    await page.getByRole('button', { name: 'Clear completed' }).click();
-    await expect(todoItems).toHaveCount(2);
-    await expect(todoItems).toHaveText([TODO_ITEMS[0], TODO_ITEMS[2]]);
-  });
-
-  test('should be hidden when there are no items that are completed', async ({ page }) => {
-    await page.locator('.todo-list li .toggle').first().check();
-    await page.getByRole('button', { name: 'Clear completed' }).click();
-    await expect(page.getByRole('button', { name: 'Clear completed' })).toBeHidden();
-  });
-});
+export default MessagesPage;
