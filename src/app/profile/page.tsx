@@ -141,9 +141,9 @@ export default function ProfilePage() {
                   setNewBio(bio || '');
                   setIsEditing(true);
                 }}
-                >
-                  Edit Bio
-                </Button>
+              >
+                Edit Bio
+              </Button>
             </div>
           )}
         </div>
