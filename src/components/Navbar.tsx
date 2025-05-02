@@ -2,37 +2,48 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Container, Nav, Navbar, Image, Form, Button, FormControl } from 'react-bootstrap';
 import { PersonCircle } from 'react-bootstrap-icons';
 
 const NavBar: React.FC = () => {
   const { data: session } = useSession();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/search?query=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
 
   return (
     <Navbar bg="success" variant="dark" expand="lg" sticky="top">
       <Container fluid className="px-4 d-flex align-items-center justify-content-between">
         {/* Left: Logo and Brand */}
-        <div className="d-flex align-items-center">
-          <Navbar.Brand as={Link} href="/" className="d-flex align-items-center text-white fw-bold me-3">
-            <Image
-              src="/raw.png"
-              alt="UH Marketplace Logo"
-              width="35"
-              height="35"
-              className="me-2"
-            />
-            UH Marketplace
-          </Navbar.Brand>
-        </div>
+        <Navbar.Brand as={Link} href="/" className="d-flex align-items-center text-white fw-bold me-3">
+          <Image
+            src="/raw.png"
+            alt="UH Marketplace Logo"
+            width="35"
+            height="35"
+            className="me-2"
+          />
+          UH Marketplace
+        </Navbar.Brand>
 
         {/* Center: Search Bar */}
         <div className="flex-grow-1 d-flex justify-content-center">
-          <Form className="d-flex w-100" style={{ maxWidth: '400px' }}>
+          <Form className="d-flex w-100" style={{ maxWidth: '400px' }} onSubmit={handleSearch}>
             <FormControl
               type="search"
               placeholder="Search for items..."
               className="me-2"
               aria-label="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Button variant="light" type="submit">Search</Button>
           </Form>
