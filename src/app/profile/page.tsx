@@ -62,6 +62,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
   };
 
   const handleDelete = async (): Promise<void> => {
+    // eslint-disable-next-line no-alert
     if (onDelete && window.confirm('Are you sure you want to delete this item?')) {
       await onDelete(item.id);
     }
