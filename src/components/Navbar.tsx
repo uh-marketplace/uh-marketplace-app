@@ -51,9 +51,6 @@ const NavBar: React.FC = () => {
 
         {/* Right: Nav Links */}
         <Nav className="d-flex align-items-center ms-3">
-          <Nav.Link as={Link} href="/profile" className="text-white fw-semibold">
-            Profile Page
-          </Nav.Link>
           <Nav.Link as={Link} href="/add" className="text-white fw-semibold">
             Add
           </Nav.Link>
