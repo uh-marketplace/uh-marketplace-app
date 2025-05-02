@@ -54,7 +54,7 @@ export async function addItem(item: { name: string;
     },
   });
   // After adding, redirect to the list page
-  redirect('/list');
+  redirect('/profile');
 }
 
 /**
@@ -91,7 +91,7 @@ export async function editItem(item: Item) {
     },
   });
   // After updating, redirect to the list page
-  redirect('/list');
+  redirect('/profile');
 }
 
 /**
@@ -113,7 +113,7 @@ export async function deleteItem(id: number) {
     where: { id },
   });
   // After deleting, redirect to the list page
-  redirect('/list');
+  redirect('/profile');
 }
 
 /**
@@ -127,6 +127,7 @@ export async function createUser(credentials: { email: string; password: string 
     data: {
       email: credentials.email,
       password,
+      bio: '',
     },
   });
 }
