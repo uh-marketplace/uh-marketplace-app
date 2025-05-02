@@ -109,11 +109,13 @@ export default function ProfilePage() {
 
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="text-center">
-            <strong>Email:</strong><br />
+            <strong>Email:</strong>
+            <br />
             {email}
           </div>
           <div className="text-center">
-            <strong>Bio:</strong><br />
+            <strong>Bio:</strong>
+            <br />
             {isEditing ? (
               <input
                 className="border p-1 rounded w-full mt-1 text-center"
@@ -133,7 +135,8 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="text-center">
-              <Button variant="success" onClick={() => {
+              <Button variant="success" 
+              onClick={() => {
                 setNewBio(bio || '');
                 setIsEditing(true);
               }}>
@@ -170,10 +173,16 @@ export default function ProfilePage() {
                   className="rounded mb-4 object-contain"
                 />
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">${item.price.toFixed(2)}</p>
-                <p className="text-gray-600 text-center">Location: {item.location}</p>
-                <p className="text-gray-600 text-center">Condition: {item.condition}</p>
-                <p className="text-gray-600 text-center mt-2">{item.description}</p>
+                <p className="text-gray-600 text-center">{item.price.toFixed(2)}</p>
+                <p className="text-gray-600 text-center">
+                  Location: {item.location}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Condition: {item.condition}
+                </p>
+                <p className="text-gray-600 text-center mt-2">
+                  {item.description}
+                </p>
 
                 <div className="d-flex gap-2 mt-3">
                   <Button variant="success" onClick={() => router.push(`/edit/${item.id}`)}>Edit</Button>
