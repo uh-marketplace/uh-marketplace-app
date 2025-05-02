@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { redirect, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Button } from 'react-bootstrap'; // <-- Bootstrap Button
 
 interface Item {
   id: number;
@@ -79,7 +80,6 @@ export default function ProfilePage() {
   };
 
   const handleDeleteItem = async (itemId: number) => {
-    // eslint-disable-next-line no-restricted-globals
     const confirmDelete = window.confirm('Are you sure you want to delete this item?');
     if (!confirmDelete) return;
 
@@ -92,7 +92,6 @@ export default function ProfilePage() {
     if (res.ok) {
       setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
     } else {
-      // eslint-disable-next-line no-alert
       window.alert('Failed to delete item.');
     }
   };
@@ -105,22 +104,17 @@ export default function ProfilePage() {
     <div className="flex flex-col items-center justify-start min-h-screen p-8 bg-gray-100">
       <h1 className="text-4xl font-bold mb-8 text-center">User Profile</h1>
 
-      {/* Details Section */}
       <div className="w-full max-w-2xl bg-white rounded shadow p-6 mb-6 flex flex-col items-center">
         <h2 className="text-2xl font-semibold mb-6 text-center">Details</h2>
 
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="text-center">
-            <strong>
-              Email:
-            </strong>
+            <strong>Email:</strong>
             <br />
             {email}
           </div>
           <div className="text-center">
-            <strong>
-              Bio:
-            </strong>
+            <strong>Bio:</strong>
             <br />
             {isEditing ? (
               <input
@@ -135,38 +129,26 @@ export default function ProfilePage() {
           </div>
 
           {isEditing ? (
-            <div className="flex gap-4">
-              <button
-                onClick={handleSaveBio}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-4 rounded"
-                type="button"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-1 px-4 rounded"
-                type="button"
-              >
-                Cancel
-              </button>
+            <div className="d-flex gap-2">
+              <Button variant="success" onClick={handleSaveBio}>Save</Button>
+              <Button variant="success" onClick={() => setIsEditing(false)}>Cancel</Button>
             </div>
           ) : (
-            <button
-              onClick={() => {
-                setNewBio(bio || '');
-                setIsEditing(true);
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              type="button"
-            >
-              Edit Bio
-            </button>
+            <div className="text-center">
+              <Button
+                variant="success"
+                onClick={() => {
+                  setNewBio(bio || '');
+                  setIsEditing(true);
+                }}
+              >
+                Edit Bio
+              </Button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Posted Items Section */}
       <div className="w-full max-w-7xl bg-white rounded shadow p-6 mb-6 flex flex-col items-center">
         <h2 className="text-2xl font-semibold mb-8 text-center">Posted Items</h2>
         {items.length === 0 ? (
@@ -185,7 +167,6 @@ export default function ProfilePage() {
                 className="border rounded p-4 flex flex-col items-center"
                 style={{ width: '250px' }}
               >
-                {/* Image */}
                 <Image
                   src={item.imageUrl}
                   alt={item.name}
@@ -193,13 +174,8 @@ export default function ProfilePage() {
                   height={150}
                   className="rounded mb-4 object-contain"
                 />
-
-                {/* Info */}
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">
-                  $
-                  {item.price.toFixed(2)}
-                </p>
+                <p className="text-gray-600 text-center">{item.price.toFixed(2)}</p>
                 <p className="text-gray-600 text-center">
                   Location:
                   {item.location}
@@ -212,22 +188,9 @@ export default function ProfilePage() {
                   {item.description}
                 </p>
 
-                {/* Buttons */}
-                <div className="flex gap-2 mt-4">
-                  <button
-                    onClick={() => router.push(`/edit/${item.id}`)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
-                    type="button"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteItem(item.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
-                    type="button"
-                  >
-                    Delete
-                  </button>
+                <div className="d-flex gap-2 mt-3">
+                  <Button variant="success" onClick={() => router.push(`/edit/${item.id}`)}>Edit</Button>
+                  <Button variant="success" onClick={() => handleDeleteItem(item.id)}>Delete</Button>
                 </div>
               </div>
             ))}
