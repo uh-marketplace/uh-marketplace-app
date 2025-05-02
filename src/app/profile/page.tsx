@@ -137,8 +137,7 @@ export default function ProfilePage() {
             <div className="text-center">
               <Button
                 variant="success"
-                onClick=
-                {() => {
+                onClick={() => {
                   setNewBio(bio || '');
                   setIsEditing(true);
                 }}>
