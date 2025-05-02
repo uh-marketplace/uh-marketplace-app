@@ -6,22 +6,24 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function FavoritesPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFavorites = async () => {
-      if (!session?.user) return;
-
       const res = await fetch('/api/favorites');
       const data = await res.json();
       setFavorites(data);
       setLoading(false);
     };
 
-    fetchFavorites();
-  }, [session]);
+    if (status === 'authenticated') {
+      fetchFavorites();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status]);
 
   const removeFromFavorites = async (itemId: number) => {
     await fetch('/api/favorite', {
