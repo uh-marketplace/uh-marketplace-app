@@ -5,8 +5,22 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
+type Item = {
+  id: string;
+  // Add other fields based on your database schema
+  name: string;
+  description: string;
+  price: number;
+};
+
 export default async function Home() {
-  const items = await prisma.item.findMany();
+  const items: Item[] = await prisma.item.findMany({
+    where: {
+      condition: {
+        in: ['good', 'fair', 'poor'], // Only include valid conditions
+      },
+    },
+  });
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -32,7 +46,7 @@ export default async function Home() {
 
           {/* Featured Items Section */}
           <Row className="justify-content-center mt-5 g-4 pb-5">
-            {items.map((item) => (
+            {items.map((item: Item) => (
               <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
                 <ItemCard item={item} />
               </Col>

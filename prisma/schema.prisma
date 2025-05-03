@@ -50,6 +50,7 @@ enum Role {
 }
 
 enum Condition {
+  excellent
   good
   fair
   poor

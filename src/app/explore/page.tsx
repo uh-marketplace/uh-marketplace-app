@@ -6,6 +6,11 @@ export const dynamic = 'force-dynamic';
 export default async function Explore() {
   // Fetch all items from the database using Prisma
   const items = await prisma.item.findMany({
+    where: {
+      condition: {
+        in: ['good', 'fair', 'poor'], // Only include valid conditions
+      },
+    },
     orderBy: {
       id: 'desc', // optional: newest items first
     },
