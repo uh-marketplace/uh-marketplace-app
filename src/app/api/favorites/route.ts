@@ -28,6 +28,8 @@ export async function GET() {
           location: true,
           condition: true,
           imageUrl: true,
+          description: true,
+          owner: true,
         },
       },
     },

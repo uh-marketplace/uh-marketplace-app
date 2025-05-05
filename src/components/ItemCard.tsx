@@ -107,7 +107,7 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
             </Button>
           </Modal.Footer>
         </Modal>
-        <p className="fw-normal mb-1">{item.price}</p>
+        <p className="fw-normal mb-1">{`$${item.price.toFixed(2)}`}</p>
         <h2 className="fs-6 fw-normal mb-1">
           Contact:
           {' '}
@@ -121,6 +121,7 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
           {'Location: '}
           {item.location}
         </p>
+        <p className="text-muted small mb-1">{item.description}</p>
       </div>
     </div>
   );
