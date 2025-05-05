@@ -1,8 +1,4 @@
-import { test, expect } from '@playwright/test';
-
-test.use({
-  storageState: 'john-auth.json',
-});
+import { test, expect } from './auth-utils';
 
 test('test', async ({ page }) => {
   await page.goto('https://uh-marketplace-app.vercel.app/explore');
