@@ -36,14 +36,6 @@ enum Condition {
   poor
 }
 
-model Stuff {
-  id        Int       @id @default(autoincrement())
-  name      String
-  quantity  Int
-  condition Condition @default(good)
-  owner     String
-}
-
 model Item {
   id        Int       @id @default(autoincrement())
   name      String
