@@ -121,7 +121,6 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
           {'Location: '}
           {item.location}
         </p>
-        <p className="text-muted small mb-1">{item.description}</p>
       </div>
     </div>
   );
