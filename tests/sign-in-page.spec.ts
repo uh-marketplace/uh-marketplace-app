@@ -1,21 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './auth-utils';
 
-test.use({
-  storageState: 'john-auth.json',
-});
-
-test('test', async ({ page }) => {
-  await expect(page.locator('div').filter({ hasText: 'Sign InEmailPasswordSigninDon' }).nth(2)).toBeVisible();
-  await expect(page.locator('div').filter({ hasText: /^EmailPasswordSignin$/ })).toBeVisible();
-  await expect(page.getByText('Don\'t have an account?Sign up')).toBeVisible();
-  await page.getByRole('button', { name: 'Signin' }).click();
-  await page.locator('input[name="email"]').click();
-  await page.locator('input[name="password"]').click();
-  await page.getByRole('link', { name: 'UH Marketplace Logo UH' }).click();
-  await expect(page.getByRole('navigation')).toBeVisible();
-  await expect(page.getByRole('contentinfo')).toBeVisible();
-  await page.getByRole('link', { name: 'Add' }).click();
-  await page.getByRole('link', { name: 'Explore' }).click();
-  await page.getByRole('link', { name: 'Favorites' }).click();
-  await page.getByRole('link', { name: 'Sign In' }).click();
+test('test', async ({ getUserPage }) => {
+  const userPage = await getUserPage('john@foo.com', 'changeme');
+  await userPage.goto('https://uh-marketplace-app.vercel.app/auth/signin');
+  await expect(userPage.locator('div').filter({ hasText: 'Sign InEmailPasswordSigninDon' }).nth(2)).toBeVisible();
+  await expect(userPage.locator('div').filter({ hasText: /^EmailPasswordSignin$/ })).toBeVisible();
+  await expect(userPage.getByText('Don\'t have an account?Sign up')).toBeVisible();
+  await userPage.getByRole('button', { name: 'Signin' }).click();
+  await userPage.locator('input[name="email"]').click();
+  await userPage.locator('input[name="password"]').click();
+  await userPage.getByRole('link', { name: 'UH Marketplace Logo UH' }).click();
+  await expect(userPage.getByRole('navigation')).toBeVisible();
+  await expect(userPage.getByRole('contentinfo')).toBeVisible();
+  await userPage.getByRole('link', { name: 'Add' }).click();
+  await userPage.getByRole('link', { name: 'Explore' }).click();
+  await userPage.getByRole('link', { name: 'Favorites' }).click();
+  await userPage.getByRole('link', { name: 'Sign In' }).click();
 });
