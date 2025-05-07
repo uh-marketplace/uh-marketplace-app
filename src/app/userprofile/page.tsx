@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { Button } from 'react-bootstrap';
 
 interface Item {
   id: number;
@@ -16,29 +17,32 @@ interface Item {
 
 export default function UserProfilePage() {
   const searchParams = useSearchParams();
-  const emailParam = searchParams.get('email');
-  const [bio, setBio] = useState<string>('');
+  const email = searchParams.get('email');
+
+  const [bio, setBio] = useState<string | null>(null);
   const [items, setItems] = useState<Item[]>([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (emailParam) {
+      if (email) {
         const res = await fetch('/api/get-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailParam }),
+          body: JSON.stringify({ email }),
         });
         const data = await res.json();
-        setBio(data?.bio || 'No bio set');
+        if (data?.bio) {
+          setBio(data.bio);
+        }
       }
     };
 
     const fetchUserItems = async () => {
-      if (emailParam) {
+      if (email) {
         const res = await fetch('/api/get-user-items', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailParam }),
+          body: JSON.stringify({ email }),
         });
         const data = await res.json();
         if (data?.items) {
@@ -49,10 +53,10 @@ export default function UserProfilePage() {
 
     fetchUserData();
     fetchUserItems();
-  }, [emailParam]);
+  }, [email]);
 
-  if (!emailParam) {
-    return <p className="text-center mt-10">No user specified.</p>;
+  if (!email) {
+    return <p className="text-center mt-8 text-red-500">No user specified.</p>;
   }
 
   return (
@@ -61,15 +65,14 @@ export default function UserProfilePage() {
 
       <div className="w-full max-w-2xl bg-white rounded shadow p-6 mb-6 flex flex-col items-center">
         <h2 className="text-2xl font-semibold mb-6 text-center">Details</h2>
-        <div className="text-center">
-          <strong>Email:</strong>
-          <br />
-          {emailParam}
-        </div>
-        <div className="text-center mt-4">
-          <strong>Bio:</strong>
-          <br />
-          {bio}
+
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="text-center">
+            <strong>Email:</strong><br />{email}
+          </div>
+          <div className="text-center">
+            <strong>Bio:</strong><br />{bio || 'No bio set'}
+          </div>
         </div>
       </div>
 
@@ -92,18 +95,9 @@ export default function UserProfilePage() {
                   className="rounded mb-4 object-contain"
                 />
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">
-                  $
-                  {item.price.toFixed(2)}
-                </p>
-                <p className="text-gray-600 text-center">
-                  Location:
-                  {item.location}
-                </p>
-                <p className="text-gray-600 text-center">
-                  Condition:
-                  {item.condition}
-                </p>
+                <p className="text-gray-600 text-center">${item.price.toFixed(2)}</p>
+                <p className="text-gray-600 text-center">Location: {item.location}</p>
+                <p className="text-gray-600 text-center">Condition: {item.condition}</p>
                 <p className="text-gray-600 text-center mt-2">{item.description}</p>
               </div>
             ))}
