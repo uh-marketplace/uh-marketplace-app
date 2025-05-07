@@ -115,6 +115,11 @@ const ItemCard = ({
               Location:
               {item.location}
             </p>
+            <p className="text-secondary">
+              Contact:
+              {' '}
+              {item.owner}
+            </p>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
