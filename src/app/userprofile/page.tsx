@@ -3,7 +3,6 @@
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Button } from 'react-bootstrap';
 
 interface Item {
   id: number;
@@ -68,10 +67,14 @@ export default function UserProfilePage() {
 
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="text-center">
-            <strong>Email:</strong><br />{email}
+            <strong>Email:</strong>
+            <br />
+            {email}
           </div>
           <div className="text-center">
-            <strong>Bio:</strong><br />{bio || 'No bio set'}
+            <strong>Bio:</strong>
+            <br />
+            {bio || 'No bio set'}
           </div>
         </div>
       </div>
@@ -95,9 +98,18 @@ export default function UserProfilePage() {
                   className="rounded mb-4 object-contain"
                 />
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">${item.price.toFixed(2)}</p>
-                <p className="text-gray-600 text-center">Location: {item.location}</p>
-                <p className="text-gray-600 text-center">Condition: {item.condition}</p>
+                <p className="text-gray-600 text-center">
+                  $
+                  {item.price.toFixed(2)}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Location:
+                  {item.location}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Condition:
+                  {item.condition}
+                </p>
                 <p className="text-gray-600 text-center mt-2">{item.description}</p>
               </div>
             ))}
