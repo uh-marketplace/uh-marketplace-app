@@ -4,7 +4,9 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { Col, Row } from 'react-bootstrap';
+// eslint-disable-next-line import/extensions
+import ItemCard from '@/components/ItemCard';
 
 interface Item {
   id: number;
@@ -84,39 +86,21 @@ export default function UserProfileContent() {
           <div
             className="grid gap-6 justify-center"
             style={{
+              gridTemplateColumns: 'repeat(auto-fill',
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded p-4 flex flex-col items-center"
-                style={{ width: '250px' }}
-              >
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  width={150}
-                  height={150}
-                  className="rounded mb-4 object-contain"
-                />
-                <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">
-                  $
-                  {item.price.toFixed(2)}
-                </p>
-                <p className="text-gray-600 text-center">
-                  Location:
-                  {item.location}
-                </p>
-                <p className="text-gray-600 text-center">
-                  Condition:
-                  {item.condition}
-                </p>
-                <p className="text-gray-600 text-center mt-2">{item.description}</p>
-              </div>
-            ))}
+            <Row className="g-4">
+              {items.map((item) => (
+                <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
+                  <ItemCard
+                    item={item}
+                    initialFavorited
+                  />
+                </Col>
+
+              ))}
+            </Row>
           </div>
         )}
       </div>

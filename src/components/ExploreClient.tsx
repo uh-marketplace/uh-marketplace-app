@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Container, Row, Col, Form } from 'react-bootstrap';
-import { GeoAltFill } from 'react-bootstrap-icons';
 import ItemCard from '@/components/ItemCard';
 
 export default function ExploreClient({ items }: { items: any[] }) {
@@ -26,7 +25,6 @@ export default function ExploreClient({ items }: { items: any[] }) {
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h1 className="fs-4 fw-bold">Explore Listings</h1>
-        <GeoAltFill size={24} color="#555" />
       </div>
 
       {/* Filter Bar */}

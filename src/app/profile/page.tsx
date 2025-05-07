@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { redirect, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Button } from 'react-bootstrap'; // <-- Bootstrap Button
+import { Button, Col, Row } from 'react-bootstrap';
+import ItemCard from '@/components/ItemCard';
 
 interface Item {
   id: number;
@@ -157,43 +157,24 @@ export default function ProfilePage() {
           <div
             className="grid gap-6 justify-center"
             style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill',
               display: 'grid',
             }}
           >
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded p-4 flex flex-col items-center"
-                style={{ width: '250px' }}
-              >
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  width={150}
-                  height={150}
-                  className="rounded mb-4 object-contain"
-                />
-                <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">{item.price.toFixed(2)}</p>
-                <p className="text-gray-600 text-center">
-                  Location:
-                  {item.location}
-                </p>
-                <p className="text-gray-600 text-center">
-                  Condition:
-                  {item.condition}
-                </p>
-                <p className="text-gray-600 text-center mt-2">
-                  {item.description}
-                </p>
+            <Row className="g-4">
+              {items.map((item) => (
+                <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
+                  <ItemCard
+                    item={item}
+                  />
+                  <div className="d-flex gap-2 mt-3">
+                    <Button variant="success" onClick={() => router.push(`/edit/${item.id}`)}>Edit</Button>
+                    <Button variant="success" onClick={() => handleDeleteItem(item.id)}>Delete</Button>
+                  </div>
+                </Col>
 
-                <div className="d-flex gap-2 mt-3">
-                  <Button variant="success" onClick={() => router.push(`/edit/${item.id}`)}>Edit</Button>
-                  <Button variant="success" onClick={() => handleDeleteItem(item.id)}>Delete</Button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </Row>
           </div>
         )}
       </div>

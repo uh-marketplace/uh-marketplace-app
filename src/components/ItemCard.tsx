@@ -21,7 +21,6 @@ const ItemCard = ({
 }: ItemCardProps) => {
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
   const [show, setShow] = useState(false);
-
   useEffect(() => {
     setIsFavorited(initialFavorited);
   }, [initialFavorited]);
