@@ -60,9 +60,6 @@ const NavBar: React.FC = () => {
           <Nav.Link as={Link} href="/favorites" className="text-white fw-semibold">
             Favorites
           </Nav.Link>
-          <Nav.Link as={Link} href="/messages" className="text-white fw-semibold">
-            Messages
-          </Nav.Link>
 
           {session?.user ? (
             <>
