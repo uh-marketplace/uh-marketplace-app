@@ -83,9 +83,9 @@ export default function UserProfileContent() {
         ) : (
           <div
             className="grid gap-6 justify-center"
-            style={{ 
+            style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
             {items.map((item) => (
