@@ -98,12 +98,19 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
               className="w-100 h-auto object-cover mb-3"
             />
             <p>{item.description}</p>
-            <p className="fw-bold">${item.price}</p>
-            <p className="text-secondary">
-              Condition: {item.condition}
+            <p className="fw-bold">
+              $
+              {item.price}
             </p>
             <p className="text-secondary">
-              Location: {item.location}
+              Condition:
+              {' '}
+              {item.condition}
+            </p>
+            <p className="text-secondary">
+              Location:
+              {' '}
+              {item.location}
             </p>
           </Modal.Body>
           <Modal.Footer>
@@ -113,23 +120,31 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
           </Modal.Footer>
         </Modal>
 
-        <p className="fw-normal mb-1">${item.price.toFixed(2)}</p>
+        <p className="fw-normal mb-1">
+          $
+          {item.price.toFixed(2)}
+        </p>
 
         <h2 className="fs-6 fw-normal mb-1">
-          Contact:{' '}
+          Contact:
+          {' '}
           <Link
             href={`/userprofile?email=${encodeURIComponent(item.owner)}`}
-            className="text-decoration-underline text-primary"
+            className="text-decoration-none text-black"
           >
             {item.owner}
           </Link>
         </h2>
 
         <p className="text-secondary mb-1">
-          Condition: {item.condition}
+          Condition:
+          {' '}
+          {item.condition}
         </p>
         <p className="text-secondary small">
-          Location: {item.location}
+          Location:
+          {' '}
+          {item.location}
         </p>
       </div>
     </div>

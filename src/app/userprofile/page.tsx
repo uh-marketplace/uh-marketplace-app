@@ -1,10 +1,10 @@
 // File: src/app/userprofile/page.tsx
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { Button } from 'react-bootstrap';
 
 interface Item {
   id: number;
@@ -64,10 +64,14 @@ export default function UserProfilePage() {
       <div className="w-full max-w-2xl bg-white rounded shadow p-6 mb-6 flex flex-col items-center">
         <h2 className="text-2xl font-semibold mb-6 text-center">Details</h2>
         <div className="text-center">
-          <strong>Email:</strong><br />{emailParam}
+          <strong>Email:</strong>
+          <br />
+          {emailParam}
         </div>
         <div className="text-center mt-4">
-          <strong>Bio:</strong><br />{bio}
+          <strong>Bio:</strong>
+          <br />
+          {bio}
         </div>
       </div>
 
@@ -76,14 +80,32 @@ export default function UserProfilePage() {
         {items.length === 0 ? (
           <p className="text-center">This user has not posted any items yet.</p>
         ) : (
-          <div className="grid gap-6 justify-center" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', display: 'grid' }}>
+          <div
+            className="grid gap-6 justify-center"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', display: 'grid' }}
+          >
             {items.map((item) => (
               <div key={item.id} className="border rounded p-4 flex flex-col items-center" style={{ width: '250px' }}>
-                <Image src={item.imageUrl} alt={item.name} width={150} height={150} className="rounded mb-4 object-contain" />
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  width={150}
+                  height={150}
+                  className="rounded mb-4 object-contain"
+                />
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">${item.price.toFixed(2)}</p>
-                <p className="text-gray-600 text-center">Location: {item.location}</p>
-                <p className="text-gray-600 text-center">Condition: {item.condition}</p>
+                <p className="text-gray-600 text-center">
+                  $
+                  {item.price.toFixed(2)}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Location:
+                  {item.location}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Condition:
+                  {item.condition}
+                </p>
                 <p className="text-gray-600 text-center mt-2">{item.description}</p>
               </div>
             ))}
