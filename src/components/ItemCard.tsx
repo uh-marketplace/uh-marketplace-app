@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Heart, HeartFill } from 'react-bootstrap-icons';
 import { Button, Modal } from 'react-bootstrap';
 
@@ -13,6 +14,7 @@ type ItemCardProps = {
 
 const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProps) => {
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
     setIsFavorited(initialFavorited);
@@ -38,7 +40,6 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
     }
   };
 
-  const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -74,10 +75,16 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
           onClick={handleShow}
           className="fs-6 fw-bold mb-1"
           style={{
-            backgroundColor: 'transparent', border: 'none', color: 'inherit', textDecoration: 'none', padding: 0 }}
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: 'inherit',
+            textDecoration: 'none',
+            padding: 0,
+          }}
         >
           {item.name}
         </Button>
+
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
             <Modal.Title>{item.name}</Modal.Title>
@@ -91,14 +98,12 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
               className="w-100 h-auto object-cover mb-3"
             />
             <p>{item.description}</p>
-            <p className="fw-bold">{item.price}</p>
+            <p className="fw-bold">${item.price}</p>
             <p className="text-secondary">
-              {'Condition: '}
-              {item.condition}
+              Condition: {item.condition}
             </p>
             <p className="text-secondary">
-              {'Location: '}
-              {item.location}
+              Location: {item.location}
             </p>
           </Modal.Body>
           <Modal.Footer>
@@ -107,19 +112,24 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
             </Button>
           </Modal.Footer>
         </Modal>
-        <p className="fw-normal mb-1">{`$${item.price.toFixed(2)}`}</p>
+
+        <p className="fw-normal mb-1">${item.price.toFixed(2)}</p>
+
         <h2 className="fs-6 fw-normal mb-1">
-          Contact:
-          {' '}
-          {item.owner}
+          Contact:{' '}
+          <Link
+            href={`/userprofile?email=${encodeURIComponent(item.owner)}`}
+            className="text-decoration-underline text-primary"
+          >
+            {item.owner}
+          </Link>
         </h2>
+
         <p className="text-secondary mb-1">
-          {'Condition: '}
-          {item.condition}
+          Condition: {item.condition}
         </p>
         <p className="text-secondary small">
-          {'Location: '}
-          {item.location}
+          Location: {item.location}
         </p>
       </div>
     </div>
