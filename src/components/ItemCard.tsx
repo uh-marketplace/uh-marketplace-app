@@ -8,11 +8,15 @@ import { Button, Modal } from 'react-bootstrap';
 
 type ItemCardProps = {
   item: any;
-  initialFavorited: boolean;
+  initialFavorited?: boolean;
   onUnfavorite?: () => void;
 };
 
-const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProps) => {
+const ItemCard = ({
+  item,
+  initialFavorited = false,
+  onUnfavorite = () => {},
+}: ItemCardProps) => {
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
   const [show, setShow] = useState(false);
 
@@ -45,8 +49,7 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
 
   return (
     <div
-      className="position-relative border rounded-lg overflow-hidden shadow-sm
-      hover:shadow-md transition p-2 bg-white"
+      className="position-relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition p-2 bg-white"
     >
       <button
         type="button"
@@ -98,20 +101,9 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
               className="w-100 h-auto object-cover mb-3"
             />
             <p>{item.description}</p>
-            <p className="fw-bold">
-              $
-              {item.price}
-            </p>
-            <p className="text-secondary">
-              Condition:
-              {' '}
-              {item.condition}
-            </p>
-            <p className="text-secondary">
-              Location:
-              {' '}
-              {item.location}
-            </p>
+            <p className="fw-bold">${item.price}</p>
+            <p className="text-secondary">Condition: {item.condition}</p>
+            <p className="text-secondary">Location: {item.location}</p>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
@@ -120,14 +112,10 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
           </Modal.Footer>
         </Modal>
 
-        <p className="fw-normal mb-1">
-          $
-          {item.price.toFixed(2)}
-        </p>
+        <p className="fw-normal mb-1">${item.price.toFixed(2)}</p>
 
         <h2 className="fs-6 fw-normal mb-1">
-          Contact:
-          {' '}
+          Contact:{' '}
           <Link
             href={`/userprofile?email=${encodeURIComponent(item.owner)}`}
             className="text-decoration-none text-black"
@@ -136,23 +124,11 @@ const ItemCard = ({ item, initialFavorited = false, onUnfavorite }: ItemCardProp
           </Link>
         </h2>
 
-        <p className="text-secondary mb-1">
-          Condition:
-          {' '}
-          {item.condition}
-        </p>
-        <p className="text-secondary small">
-          Location:
-          {' '}
-          {item.location}
-        </p>
+        <p className="text-secondary mb-1">Condition: {item.condition}</p>
+        <p className="text-secondary small">Location: {item.location}</p>
       </div>
     </div>
   );
-};
-
-ItemCard.defaultProps = {
-  onUnfavorite: () => {},
 };
 
 export default ItemCard;
