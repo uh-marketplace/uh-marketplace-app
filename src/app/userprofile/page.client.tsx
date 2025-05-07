@@ -1,9 +1,9 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+export const dynamic = 'force-dynamic';
 
 interface Item {
   id: number;
