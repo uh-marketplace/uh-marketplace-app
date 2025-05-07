@@ -1,4 +1,5 @@
 // app/userprofile/UserProfileContent.tsx
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -98,9 +99,18 @@ export default function UserProfileContent() {
                   className="rounded mb-4 object-contain"
                 />
                 <h3 className="text-xl font-semibold text-center">{item.name}</h3>
-                <p className="text-gray-600 text-center">${item.price.toFixed(2)}</p>
-                <p className="text-gray-600 text-center">Location: {item.location}</p>
-                <p className="text-gray-600 text-center">Condition: {item.condition}</p>
+                <p className="text-gray-600 text-center">
+                  $
+                  {item.price.toFixed(2)}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Location:
+                  {item.location}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Condition:
+                  {item.condition}
+                </p>
                 <p className="text-gray-600 text-center mt-2">{item.description}</p>
               </div>
             ))}
