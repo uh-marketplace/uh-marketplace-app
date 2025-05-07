@@ -49,6 +49,14 @@ model Item {
   favoritedBy Favorite[]
 }
 
+model Stuff {
+  id        Int       @id @default(autoincrement())
+  name      String
+  quantity  Int
+  condition Condition @default(good)
+  owner     String
+}
+
 model Favorite {
   id        Int   @id @default(autoincrement())
   userId    Int
