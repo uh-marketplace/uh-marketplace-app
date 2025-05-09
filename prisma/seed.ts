@@ -67,4 +67,4 @@ main()
     console.error('❌ Error during seed:', e); // ✅ show full error
     await prisma.$disconnect();
     process.exit(1);
-  });
+  }); 
